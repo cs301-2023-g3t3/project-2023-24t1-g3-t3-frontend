@@ -12,13 +12,6 @@ export default function CreateAccount() {
   const [password, setPassword] = useState('');
   const [profilePic, setProfilePic] = useState(null);
 
-  const handleProfilePicChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfilePic(URL.createObjectURL(file));
-    }
-  };
-
   const handleSubmit = () => {
     // Handle form submission logic here
   };
@@ -38,7 +31,7 @@ export default function CreateAccount() {
           <form onSubmit={handleSubmit} className="flex flex-col">
             <div className="mb-4">
               <label className="block text-gray-700">Profile Picture</label>
-              <input type="file" onChange={handleProfilePicChange} className="mt-2" />
+              <input type="file" className="mt-2" />
               {profilePic && <img src={profilePic} alt="Profile" className="mt-2 h-32 w-32 object-cover rounded-full" />}
             </div>
             <div className="mb-4">

@@ -11,13 +11,6 @@ export default function EditAccount() {
   const [email, setEmail] = useState('');
   const [profilePic, setProfilePic] = useState(null);
 
-  const handleProfilePicChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfilePic(URL.createObjectURL(file));
-    }
-  };
-
   const handleSubmit = () => {
     // Handle form submission logic here
   };
@@ -38,7 +31,7 @@ export default function EditAccount() {
             <div className="w-1/3">
                 <img className="h-32 w-32 mb-4 flex-none rounded-full bg-gray-50" src='https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' alt="" />
                 <label className="block text-gray-700">Profile Picture</label>
-                <input type="file" onChange={handleProfilePicChange} className="mt-2" />
+                <input type="file" className="mt-2" />
                 {profilePic && <img src={profilePic} alt="Profile" className="mt-2 h-32 w-32 object-cover rounded-full" />}
             </div>
             <div className="w-2/3 pl-8">
