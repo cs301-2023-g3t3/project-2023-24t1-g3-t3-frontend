@@ -35,7 +35,7 @@ export default function DashboardPage() {
     },
     {
       id: 5,
-      message: 'Account #2 upgraded to Software Engineer role',
+      message: 'Account #2 upgraded to Engineer role',
       date: '2021-09-03',
       time: '14:10:00',
     },
@@ -53,7 +53,7 @@ export default function DashboardPage() {
     },
     {
       id: 8,
-      message: 'Account #1 promoted to Admin role',
+      message: 'Account #1 promoted to Owner role',
       date: '2021-09-05',
       time: '17:40:00',
     },

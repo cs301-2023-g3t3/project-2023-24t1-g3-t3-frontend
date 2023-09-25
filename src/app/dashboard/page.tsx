@@ -13,7 +13,7 @@ export default function DashboardPage() {
       id : 1,
       name: 'Leslie Alexander',
       email: 'leslie.alexander@example.com',
-      role: 'Co-Founder / CEO',
+      role: 'Owner',
       pointsBalance: 1200,
       enrollmentDate: '2021-06-15',
       logsCount: 50,
@@ -24,7 +24,7 @@ export default function DashboardPage() {
       id : 2,
       name: 'Michael Foster',
       email: 'michael.foster@example.com',
-      role: 'Co-Founder / CTO',
+      role: 'Manager',
       pointsBalance: 810,
       enrollmentDate: '2021-06-15',
       logsCount: 50,
@@ -34,7 +34,7 @@ export default function DashboardPage() {
       id : 3,
       name: 'Dries Vincent',
       email: 'dries.vincent@example.com',
-      role: 'Business Relations',
+      role: 'Manager',
       pointsBalance: 532,
       enrollmentDate: '2021-06-15',
       logsCount: 50,
@@ -44,7 +44,7 @@ export default function DashboardPage() {
       id : 4,
       name: 'Lindsay Walton',
       email: 'lindsay.walton@example.com',
-      role: 'Front-end Developer',
+      role: 'Engineer',
       pointsBalance: 980,
       enrollmentDate: '2021-06-15',
       logsCount: 50,
@@ -55,7 +55,7 @@ export default function DashboardPage() {
       id : 5,
       name: 'Courtney Henry',
       email: 'courtney.henry@example.com',
-      role: 'Designer',
+      role: 'Product Manager',
       pointsBalance: 1520,
       enrollmentDate: '2021-06-15',
       logsCount: 50,
@@ -66,7 +66,7 @@ export default function DashboardPage() {
       id : 6,
       name: 'Tom Cook',
       email: 'tom.cook@example.com',
-      role: 'Director of Product',
+      role: 'Product Manger',
       pointsBalance: 214,
       enrollmentDate: '2021-06-15',
       logsCount: 50,
@@ -80,8 +80,6 @@ export default function DashboardPage() {
   const filteredPeople = people.filter(person =>
     person.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  // ... (previous code)
 
   // Calculate Total Users
   const totalUsers = people.length;

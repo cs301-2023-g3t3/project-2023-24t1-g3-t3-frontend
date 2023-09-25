@@ -54,17 +54,10 @@ export default function EditAccount() {
                 <div className="mb-4">
                 <label className="block text-gray-700">Role</label>
                 <select className="mt-2 p-2 w-full border rounded">
-                    <option>Co-Founder / CEO</option>
-                    <option>Co-Founder / CTO</option>
-                    <option>Director of Product</option>
-                    <option>Business Relations</option>
-                    <option>Marketing</option>
-                    <option>Operations</option>
-                    <option>Finance</option>
-                    <option>Software Engineer</option>
-                    <option>Designer</option>
-                    <option>Intern</option>
-                    <option>Other</option>
+                    <option>Owner</option>
+                    <option>Manager</option>
+                    <option>Engineer</option>
+                    <option>Product Manager</option>
                 </select>
                 </div>
                 <div className="mb-4">

@@ -10,8 +10,6 @@ export default function Home() {
 
   function handleSubmit(e: { preventDefault: () => void }) {
     e.preventDefault()
-    // ここで何らかの処理を行う（例：バリデーション、データの保存など）
-    // ダッシュボードにリダイレクト
     router.push('/dashboard')
   }
 
