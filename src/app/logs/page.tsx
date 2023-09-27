@@ -3,84 +3,48 @@
 import { FaUserPlus } from 'react-icons/fa';
 import { FiSearch } from 'react-icons/fi';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Sidebar from '../components/Sidebar';
+import axios from 'axios';
+
 
 export default function DashboardPage() {
-  const logs = [
-    {
-      id: 1,
-      message: 'Account #1 logged in',
-      date: '2021-09-01',
-      time: '09:30:00',
-    },
-    {
-      id: 2,
-      message: 'Account #2 logged in',
-      date: '2021-09-01',
-      time: '10:15:00',
-    },
-    {
-      id: 3,
-      message: 'Account #1 changed password',
-      date: '2021-09-02',
-      time: '11:20:00',
-    },
-    {
-      id: 4,
-      message: 'Account #3 logged in',
-      date: '2021-09-02',
-      time: '12:45:00',
-    },
-    {
-      id: 5,
-      message: 'Account #2 upgraded to Engineer role',
-      date: '2021-09-03',
-      time: '14:10:00',
-    },
-    {
-      id: 6,
-      message: 'Account #4 logged in',
-      date: '2021-09-03',
-      time: '15:30:00',
-    },
-    {
-      id: 7,
-      message: 'Account #3 changed profile picture',
-      date: '2021-09-04',
-      time: '16:25:00',
-    },
-    {
-      id: 8,
-      message: 'Account #1 promoted to Owner role',
-      date: '2021-09-05',
-      time: '17:40:00',
-    },
-    {
-      id: 9,
-      message: 'Account #4 changed email address',
-      date: '2021-09-06',
-      time: '18:55:00',
-    },
-    {
-      id: 10,
-      message: 'Account #2 deactivated',
-      date: '2021-09-07',
-      time: '19:15:00',
-    }
-  ];
-
+  const [logGroup, setLogGroup] = useState('/aws/lambda/AppendUserRole');
+  const [pages, setPages] = useState('20');
+  const [logs, setLogs] = useState([]);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const filteredLogs = logs.filter(log => {
-    const matchesSearchTerm = log.message.toLowerCase().includes(searchTerm.toLowerCase());
-    const withinDateRange = (!startDate || log.date >= startDate) && (!endDate || log.date <= endDate);
-    
-    return matchesSearchTerm && withinDateRange;
-  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "https://vm1swtn9ii.execute-api.ap-southeast-1.amazonaws.com/test/logs/get_logs?logGroup=" + logGroup + "&pageSize=" + pages
+          );
+          setLogs(response.data.logs);
+          
+          
+        } catch (err: any) {
+        setError(err);
+        }
+    };
+
+
+    fetchData();
+  }, []); 
   
+  // Empty dependency array means this useEffect runs once when component mounts
+
+  const filteredLogs = logs.filter(log => {
+    // Adjust these conditions to match the actual structure of your log objects
+    const matchesSearchTerm = JSON.stringify(log).toLowerCase().includes(searchTerm.toLowerCase());
+    // const withinDateRange = (!startDate || log.timestamp >= startDate) && (!endDate || log.timestamp <= endDate);
+    
+    return matchesSearchTerm; // && withinDateRange;
+  });
 
   return (
     <div className="bg-gray-100 h-screen flex">
@@ -111,6 +75,7 @@ export default function DashboardPage() {
                   max={endDate}
                   className="ml-2 p-1 border rounded text-gray-400"
                   onChange={e => setStartDate(e.target.value)}
+                  disabled
                 />
                 <input
                   type="date"
@@ -118,18 +83,22 @@ export default function DashboardPage() {
                   min={startDate}
                   className="ml-2 p-1 border rounded text-gray-400"
                   onChange={e => setEndDate(e.target.value)}
+                  disabled
                 />
               </div>
             </div>
           </div>
 
-          {/* Users */} 
           <div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto'>
             <ul role="list" className="divide-y divide-gray-100">
+              {error && <p>Error loading data: {(error as Error).message}</p>}
               {filteredLogs.map((log) => (
-                <li key={log.id} className="flex justify-between gap-x-6 py-5">
-                  <p className="text-sm leading-6 text-gray-900"> #{log.id}. {log.message}</p>
-                  <p className="text-sm leading-6 text-gray-500">{log.date} {log.time}</p>
+                // <li key={log.id} className="flex justify-between gap-x-6 py-5">
+                //   <p className="text-sm leading-6 text-gray-900"> #{log.id}. {log.message}</p>
+                //   <p className="text-sm leading-6 text-gray-500">{log.date} {log.time}</p>
+                // </li>
+                <li key={log} className="flex justify-between gap-x-6 py-5">
+                  <p className="text-sm leading-6 text-gray-900"> {log} </p>
                 </li>
               ))}
             </ul>
@@ -141,3 +110,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
