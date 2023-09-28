@@ -79,7 +79,12 @@ export default function Home() {
               </button>
             </div>
           </form>
-
+          <button
+              type="submit"
+              className="mt-4 w-full justify-center px-3 py-1.5 border flex gap-2 border-slate-200 rounded-lg text-slate-700 text-sm hover:border-slate-400 hover:text-slate-900 hover:shadow transition duration-150">
+              <img className="w-5 h-5" src="https://www.svgrepo.com/show/475656/google-color.svg" loading="lazy" alt="google logo"/>
+              <span>Login with Google</span>
+          </button>
           <p className="mt-10 text-center text-sm text-gray-500">
             Not a member?{' '}
             <a href="#" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">

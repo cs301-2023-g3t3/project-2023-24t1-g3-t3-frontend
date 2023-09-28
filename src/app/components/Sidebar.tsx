@@ -34,7 +34,11 @@ export default function Sidebar() {
                     <div className='flex justify-between items-center'>
                         <div className='flex items-center'>
                             <img className="h-12 w-12 flex-none rounded-full bg-gray-50" src={imageUrl} alt="" />
-                            <h1 className='ml-4 text-l leading-6 text-gray-900'>{user}</h1>
+                            
+                            <div className='flex flex-col'>
+                                <h1 className='ml-4 text-l leading-6 text-gray-900'>{user}</h1>
+                                <h2 className='ml-4 text-sm leading-6 text-gray-500'>Manager</h2>
+                            </div>
                         </div>
                         <FiMoreHorizontal className='h-5 w-5 text-gray-500 cursor-pointer' />
                     </div>

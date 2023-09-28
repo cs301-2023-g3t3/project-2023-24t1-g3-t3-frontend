@@ -10,6 +10,7 @@ export default function CreateAccount() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [autoGenerate, setAutoGenerate] = useState(false);
   const [profilePic, setProfilePic] = useState(null);
 
   const handleSubmit = () => {
@@ -44,12 +45,35 @@ export default function CreateAccount() {
             </div>
             <div className="mb-4">
               <label className="block text-gray-700">Role</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 p-2 w-full border rounded" />
+              <select className="mt-2 p-2 w-full border rounded">
+                <option>Owner</option>
+                <option>Manager</option>
+                <option>Engineer</option>
+                <option>Product Manager</option>
+                <option>None</option>
+              </select>
             </div>
+            { !autoGenerate && (
+              <div className="mb-4">
+                <label className="block text-gray-700">Password</label>
+                <input 
+                  type="password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  className="mt-2 p-2 w-full border rounded" 
+                />
+              </div>
+            )}
             <div className="mb-4">
-              <label className="block text-gray-700">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 p-2 w-full border rounded" />
+              <input 
+                type="checkbox" 
+                className="mr-2" 
+                checked={autoGenerate}
+                onChange={(e) => setAutoGenerate(e.target.checked)}
+              />
+              <label className="text-gray-700">Let the system auto-generate password</label>
             </div>
+
             <button type="submit" className="bg-blue-500 text-white p-2 rounded">
               Create Account
             </button>

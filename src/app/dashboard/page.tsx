@@ -103,6 +103,10 @@ export default function DashboardPage() {
           <Link href="/" className='mr-4 text-gray-500'>Log out</Link>
         </header>
         <main className="p-4">
+          <div className="bg-white rounded shadow p-4 mb-4">
+            <h2 className="text-lg font-semibold text-gray-600">Notice</h2>
+            <p className="mt-2 text-gray-500">There are no new announcements at this time.</p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div className="p-6 bg-white rounded shadow">
               <h2 className="text-lg font-semibold text-gray-600">Users</h2>

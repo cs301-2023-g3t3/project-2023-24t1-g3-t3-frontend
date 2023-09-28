@@ -28,7 +28,7 @@ export default function EditAccount() {
         </header>
         <main className="bg-white p-4 rounded shadow">
           <form onSubmit={handleSubmit} className="flex">
-            <div className="w-1/3">
+            <div className="w-1/3 ml-4">
                 <img className="h-32 w-32 mb-4 flex-none rounded-full bg-gray-50" src='https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' alt="" />
                 <label className="block text-gray-700">Profile Picture</label>
                 <input type="file" className="mt-2" />
@@ -43,35 +43,35 @@ export default function EditAccount() {
                 <label className="block text-gray-700">Email</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 p-2 w-full border rounded" />
               </div>
-                <div className="mb-4">
+              <div className="mb-4">
                 <label className="block text-gray-700">Password</label>
                 <input type="password" className="mt-2 p-2 w-full border rounded" />
-                </div>
-                <div className="mb-4">
+              </div>
+              <div className="mb-4">
                 <label className="block text-gray-700">Confirm Password</label>
                 <input type="password" className="mt-2 p-2 w-full border rounded" />
-                </div>
-                <div className="mb-4">
+              </div>
+              <div className="mb-4">
                 <label className="block text-gray-700">Role</label>
                 <select className="mt-2 p-2 w-full border rounded">
                     <option>Owner</option>
                     <option>Manager</option>
                     <option>Engineer</option>
                     <option>Product Manager</option>
+                    <option>None</option>
                 </select>
-                </div>
-                <div className="mb-4">
+              </div>
+              <div className="mb-4">
                 <label className="block text-gray-700">Points</label>
                 <input type="number" className="mt-2 p-2 w-full border rounded" />
-                </div>
-                <div className="mb-4">
+              </div>
+              <div className="mb-4">
                 <label className="block text-gray-700">Status</label>
                 <select className="mt-2 p-2 w-full border rounded">
                     <option>Active</option>
                     <option>Inactive</option>
                 </select>
-                </div>
-                
+              </div> 
               <button type="submit" className="bg-blue-500 text-white p-2 rounded">
                 Save Changes
               </button>

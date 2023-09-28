@@ -18,27 +18,38 @@ export default function DashboardPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+
+  // placeholder for testing
+  const fake_logs = [
+    "2023-09-27 12:00:00 - User: John Doe, Role: Admin, Action: Login",
+    "2023-09-27 12:00:33 - User: John Doe, Role: Admin, Action: Enrolled User: Robin Tan, Role: Manager",
+    "2023-09-27 15:00:00 - User: Robin Tan, Role: Manager, Action: Login",
+    "2023-09-27 15:21:33 - User: Robin Tan, Role: Manager, Action: Modified points of User: John Doe from 100 to 200",
+    "2023-09-27 16:00:00 - User: Robin Tan, Role: Manager, Action: Logout",
+    "2023-09-27 16:00:33 - User: John Doe, Role: Admin, Action: Logout",
+  ];
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
           "https://vm1swtn9ii.execute-api.ap-southeast-1.amazonaws.com/test/logs/get_logs?logGroup=" + logGroup + "&pageSize=" + pages
           );
-          setLogs(response.data.logs);
           
+          console.log(response.data.logs);
+
+          // setLogs(response.data.logs);
           
         } catch (err: any) {
         setError(err);
         }
     };
-
-
     fetchData();
   }, []); 
   
   // Empty dependency array means this useEffect runs once when component mounts
 
-  const filteredLogs = logs.filter(log => {
+  const filteredLogs = fake_logs.filter(log => {
     // Adjust these conditions to match the actual structure of your log objects
     const matchesSearchTerm = JSON.stringify(log).toLowerCase().includes(searchTerm.toLowerCase());
     // const withinDateRange = (!startDate || log.timestamp >= startDate) && (!endDate || log.timestamp <= endDate);
@@ -75,7 +86,7 @@ export default function DashboardPage() {
                   max={endDate}
                   className="ml-2 p-1 border rounded text-gray-400"
                   onChange={e => setStartDate(e.target.value)}
-                  disabled
+                  
                 />
                 <input
                   type="date"
@@ -83,7 +94,7 @@ export default function DashboardPage() {
                   min={startDate}
                   className="ml-2 p-1 border rounded text-gray-400"
                   onChange={e => setEndDate(e.target.value)}
-                  disabled
+                  
                 />
               </div>
             </div>
