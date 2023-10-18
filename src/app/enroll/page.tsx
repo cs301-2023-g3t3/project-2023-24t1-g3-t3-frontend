@@ -2,8 +2,9 @@
 
 import Sidebar from '@/app/components/Sidebar';
 import { useRouter } from 'next/navigation'; 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
+import Confirm from '../components/Confirm';
 
 export default function CreateAccount() {
   const router = useRouter();
@@ -13,9 +14,23 @@ export default function CreateAccount() {
   const [autoGenerate, setAutoGenerate] = useState(false);
   const [profilePic, setProfilePic] = useState(null);
 
+  // Permissions
+  const [canCreate, setCanCreate] = useState(false);
+  const [onConfirm, setOnConfirm] = useState(false);
+
+  const checkPermissions = () => {
+    // Check if user has permission to create account
+    setCanCreate(false); 
+  }
+
   const handleSubmit = () => {
     // Handle form submission logic here
+    setOnConfirm(false);
   };
+
+  useEffect(() => {
+    checkPermissions();
+  });
 
   return (
     <div className='bg-gray-100 h-screen flex'>
@@ -29,12 +44,12 @@ export default function CreateAccount() {
           <h1 className="text-xl font-bold text-gray-700">Enroll User</h1>
         </header>
         <main className="bg-white p-4 rounded shadow">
-          <form onSubmit={handleSubmit} className="flex flex-col">
+          <form className="flex flex-col">
             <div className="mb-4">
               <label className="block text-gray-700">Profile Picture</label>
               <input type="file" className="mt-2" />
               {profilePic && <img src={profilePic} alt="Profile" className="mt-2 h-32 w-32 object-cover rounded-full" />}
-            </div>
+            </div>    
             <div className="mb-4">
               <label className="block text-gray-700">Name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="mt-2 p-2 w-full border rounded" />
@@ -64,22 +79,49 @@ export default function CreateAccount() {
                 />
               </div>
             )}
-            <div className="mb-4">
-              <input 
-                type="checkbox" 
-                className="mr-2" 
-                checked={autoGenerate}
-                onChange={(e) => setAutoGenerate(e.target.checked)}
-              />
-              <label className="text-gray-700">Let the system auto-generate password</label>
-            </div>
+              <div className="mb-4">
+                <input 
+                  type="checkbox" 
+                  className="mr-2" 
+                  checked={autoGenerate}
+                  onChange={(e) => setAutoGenerate(e.target.checked)}
+                />
+                <label className="text-gray-700">Let the system auto-generate password</label>
+              </div>
 
-            <button type="submit" className="bg-blue-500 text-white p-2 rounded">
-              Create Account
-            </button>
-          </form>
+              <button
+                className="bg-blue-500 text-white p-2 rounded"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOnConfirm(true);
+                }}
+              >
+                Create Account
+              </button>
+
+            </form>
         </main>
       </div>
+
+      {onConfirm && !canCreate && (
+        <Confirm
+          title="Insufficient Permission"
+          message="You do not have the sufficient permissions to create the account. Would you like to request for approval?"
+          onConfirm={() => handleSubmit()}
+          onCancel={() => setOnConfirm(false)}
+        />
+      )}
+
+      {onConfirm && canCreate && (
+        
+        <Confirm
+          title="Confirm Account Creation"
+          message="Are you sure you want to create this account?"
+          onConfirm={() => handleSubmit()}
+          onCancel={() => setOnConfirm(false)}
+        />
+      )}
+
     </div>
   );
 }

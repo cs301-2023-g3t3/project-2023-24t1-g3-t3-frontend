@@ -17,17 +17,8 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-
-
-  // placeholder for testing
-  const fake_logs = [
-    "2023-09-27 12:00:00 - User: John Doe, Role: Admin, Action: Login",
-    "2023-09-27 12:00:33 - User: John Doe, Role: Admin, Action: Enrolled User: Robin Tan, Role: Manager",
-    "2023-09-27 15:00:00 - User: Robin Tan, Role: Manager, Action: Login",
-    "2023-09-27 15:21:33 - User: Robin Tan, Role: Manager, Action: Modified points of User: John Doe from 100 to 200",
-    "2023-09-27 16:00:00 - User: Robin Tan, Role: Manager, Action: Logout",
-    "2023-09-27 16:00:33 - User: John Doe, Role: Admin, Action: Logout",
-  ];
+  
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,22 +29,22 @@ export default function DashboardPage() {
           
           console.log(response.data.logs);
 
-          // setLogs(response.data.logs);
-          
+          setLogs(response.data.logs);
+          setIsLoading(false);
         } catch (err: any) {
         setError(err);
         }
     };
     fetchData();
+    
   }, []); 
   
   // Empty dependency array means this useEffect runs once when component mounts
 
-  const filteredLogs = fake_logs.filter(log => {
+  const filteredLogs = logs.filter(log => {
     // Adjust these conditions to match the actual structure of your log objects
     const matchesSearchTerm = JSON.stringify(log).toLowerCase().includes(searchTerm.toLowerCase());
     // const withinDateRange = (!startDate || log.timestamp >= startDate) && (!endDate || log.timestamp <= endDate);
-    
     return matchesSearchTerm; // && withinDateRange;
   });
 
@@ -103,21 +94,27 @@ export default function DashboardPage() {
           <div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto'>
             <ul role="list" className="divide-y divide-gray-100">
               {error && <p>Error loading data: {(error as Error).message}</p>}
-              {filteredLogs.map((log) => (
-                // <li key={log.id} className="flex justify-between gap-x-6 py-5">
-                //   <p className="text-sm leading-6 text-gray-900"> #{log.id}. {log.message}</p>
-                //   <p className="text-sm leading-6 text-gray-500">{log.date} {log.time}</p>
-                // </li>
-                <li key={log} className="flex justify-between gap-x-6 py-5">
-                  <p className="text-sm leading-6 text-gray-900"> {log} </p>
-                </li>
-              ))}
+              {isLoading ? (
+                <p>Loading...</p>
+              ) : (
+                filteredLogs.map((log) => (
+                  // <li key={log.id} className="flex justify-between gap-x-6 py-5">
+                  //   <p className="text-sm leading-6 text-gray-900"> #{log.id}. {log.message}</p>
+                  //   <p className="text-sm leading-6 text-gray-500">{log.date} {log.time}</p>
+                  // </li>
+                  <li key={log} className="flex justify-between gap-x-6 py-5">
+                    <p className="text-sm leading-6 text-gray-900"> {log} </p>
+                  </li>
+                ))  
+              )}
             </ul>
           </div>
           
           
         </main>
       </div>
+
+
     </div>
   );
 }

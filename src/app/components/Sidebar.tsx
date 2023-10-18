@@ -24,10 +24,10 @@ export default function Sidebar() {
                         <a href="/dashboard" className="text-gray-600 hover:text-gray-800">Dashboard</a>
                     </li>
                     <li className="mb-2">
-                        <a href="logs" className="text-gray-600 hover:text-gray-800">Logs</a>
+                        <a href="/logs" className="text-gray-600 hover:text-gray-800">Logs</a>
                     </li>
                     <li className="mb-2">
-                        <a href="#" className="text-gray-600 hover:text-gray-800">Settings</a>
+                        <a href="/settings" className="text-gray-600 hover:text-gray-800">Settings</a>
                     </li>
                 </ul>
                 <div className='flex flex-col justify-end flex-grow'>

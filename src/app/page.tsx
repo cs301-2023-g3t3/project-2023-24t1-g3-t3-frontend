@@ -85,12 +85,12 @@ export default function Home() {
               <img className="w-5 h-5" src="https://www.svgrepo.com/show/475656/google-color.svg" loading="lazy" alt="google logo"/>
               <span>Login with Google</span>
           </button>
-          <p className="mt-10 text-center text-sm text-gray-500">
+          {/* <p className="mt-10 text-center text-sm text-gray-500">
             Not a member?{' '}
             <a href="#" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
               Register now
             </a>
-          </p>
+          </p> */}
         </div>
       </div>
     </main>

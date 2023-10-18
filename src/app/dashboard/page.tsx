@@ -3,9 +3,19 @@
 import { FaUserPlus } from 'react-icons/fa';
 import { FiSearch } from 'react-icons/fi';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Sidebar from '../components/Sidebar';
+import MyRequests from '../components/MyRequests';
+import ApproveRequests from '../components/ApproveRequests';
+
+interface Request {
+  id: number;
+  user: string;
+  request: string;
+  status: string;
+}
+
 
 export default function DashboardPage() {
   const people = [
@@ -90,14 +100,13 @@ export default function DashboardPage() {
   // Calculate Total Logs
   const totalLogs = people.reduce((acc, person) => acc + person.logsCount, 0);
 
-
   return (
     <div className="bg-gray-100 h-screen flex">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main content */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         <header className="bg-white p-4 flex justify-between">
           <h1 className="text-xl font-bold text-gray-700">Dashboard</h1>
           <Link href="/" className='mr-4 text-gray-500'>Log out</Link>
@@ -160,6 +169,12 @@ export default function DashboardPage() {
             </ul>
           </div>
           
+          
+          <div className="flex justify-between bg-white rounded-lg shadow-lg p-6 gap-4 text-gray-700 mt-4">
+            <MyRequests />
+            <ApproveRequests />
+          </div>
+
           
         </main>
       </div>
