@@ -5,18 +5,24 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 import Confirm from '../components/Confirm';
+import { useSession } from 'next-auth/react';
+import Forbidden from '../components/Forbidden';
 
+
+  
 export default function CreateAccount() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [autoGenerate, setAutoGenerate] = useState(false);
+  const [autoGenerate, setAutoGenerate] = useState(true);
   const [profilePic, setProfilePic] = useState(null);
 
   // Permissions
   const [canCreate, setCanCreate] = useState(false);
   const [onConfirm, setOnConfirm] = useState(false);
+
 
   const checkPermissions = () => {
     // Check if user has permission to create account
@@ -31,6 +37,13 @@ export default function CreateAccount() {
   useEffect(() => {
     checkPermissions();
   });
+  
+  if (!session) {
+    return (
+      <Forbidden />
+    );
+  }
+
 
   return (
     <div className='bg-gray-100 h-screen flex'>

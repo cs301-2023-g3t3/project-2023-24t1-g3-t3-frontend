@@ -1,12 +1,17 @@
 "use client"
 
 import Confirm from '@/app/components/Confirm';
+import Forbidden from '@/app/components/Forbidden';
 import Sidebar from '@/app/components/Sidebar';
-import { useRouter } from 'next/navigation'; // Corrected import
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 
+
 export default function EditAccount() {
+  const { data: session } = useSession();
+
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,6 +20,10 @@ export default function EditAccount() {
   // Permissions
   const [canCreate, setCanCreate] = useState(false);
   const [onConfirm, setOnConfirm] = useState(false);
+
+  useEffect(() => {
+    checkPermissions();
+  });
 
   const checkPermissions = () => {
     // Check if user has permission to create account
@@ -26,9 +35,13 @@ export default function EditAccount() {
     setOnConfirm(false);
   };
 
-  useEffect(() => {
-    checkPermissions();
-  });
+  if (!session) {
+    return (
+      <Forbidden />
+    );
+  }
+
+ 
 
 
   return (

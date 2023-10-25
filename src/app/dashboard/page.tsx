@@ -8,6 +8,11 @@ import Link from 'next/link';
 import Sidebar from '../components/Sidebar';
 import MyRequests from '../components/MyRequests';
 import ApproveRequests from '../components/ApproveRequests';
+import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Login from '../components/Login';
+import Forbidden from '../components/Forbidden';
+import Header from '../components/Header';
 
 interface Request {
   id: number;
@@ -16,8 +21,18 @@ interface Request {
   status: string;
 }
 
-
 export default function DashboardPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  if (!session) {
+    return (
+      <Forbidden />
+    );
+    
+  }
+  
   const people = [
     {
       id : 1,
@@ -86,7 +101,7 @@ export default function DashboardPage() {
 
   ]
 
-  const [searchTerm, setSearchTerm] = useState('');
+  
   const filteredPeople = people.filter(person =>
     person.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -107,10 +122,7 @@ export default function DashboardPage() {
 
       {/* Main content */}
       <div className="flex-1 overflow-y-auto">
-        <header className="bg-white p-4 flex justify-between">
-          <h1 className="text-xl font-bold text-gray-700">Dashboard</h1>
-          <Link href="/" className='mr-4 text-gray-500'>Log out</Link>
-        </header>
+        <Header title="Dashboard" />
         <main className="p-4">
           <div className="bg-white rounded shadow p-4 mb-4">
             <h2 className="text-lg font-semibold text-gray-600">Notice</h2>

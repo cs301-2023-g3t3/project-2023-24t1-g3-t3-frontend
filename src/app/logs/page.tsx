@@ -7,11 +7,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Sidebar from '../components/Sidebar';
 import axios from 'axios';
+import Forbidden from '../components/Forbidden';
+import { useSession } from 'next-auth/react';
+import Header from '../components/Header';
 
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
+
   const [logGroup, setLogGroup] = useState('/aws/lambda/AppendUserRole');
-  const [pages, setPages] = useState('20');
+  const [pages, setPages] = useState('10');
   const [logs, setLogs] = useState([]);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,6 +53,13 @@ export default function DashboardPage() {
     return matchesSearchTerm; // && withinDateRange;
   });
 
+    
+  if (!session) {
+    return (
+      <Forbidden />
+    );
+  }
+
   return (
     <div className="bg-gray-100 h-screen flex">
       {/* Sidebar */}
@@ -55,10 +67,7 @@ export default function DashboardPage() {
 
       {/* Main content */}
       <div className="flex-1">
-        <header className="bg-white p-4 flex justify-between">
-          <h1 className="text-xl font-bold text-gray-700">Access Control Logs</h1>
-          <Link href="/" className='mr-4 text-gray-500'>Log out</Link>
-        </header>
+        <Header title="Access Control Logs" />
         <main className="p-4">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
@@ -94,7 +103,7 @@ export default function DashboardPage() {
           <div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto'>
             <ul role="list" className="divide-y divide-gray-100">
               {error && <p>Error loading data: {(error as Error).message}</p>}
-              {isLoading ? (
+              {!error && isLoading ? (
                 <p>Loading...</p>
               ) : (
                 filteredLogs.map((log) => (

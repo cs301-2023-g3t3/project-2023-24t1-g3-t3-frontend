@@ -7,8 +7,19 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Sidebar from '../components/Sidebar';
 import axios from 'axios';
+import { useSession } from 'next-auth/react';
+import Forbidden from '../components/Forbidden';
+import Header from '../components/Header';
 
 export default function Settings() {
+  const { data: session } = useSession();
+  
+  if (!session) {
+    return (
+      <Forbidden />
+    );
+  }
+
     return (
         <div className="bg-gray-100 h-screen flex">
         {/* Sidebar */}
@@ -16,10 +27,7 @@ export default function Settings() {
   
         {/* Main content */}
         <div className="flex-1 overflow-y-auto">
-          <header className="bg-white p-4 flex justify-between">
-            <h1 className="text-xl font-bold text-gray-700">Settings</h1>
-            <Link href="/" className='mr-4 text-gray-500'>Log out</Link>
-          </header>
+          <Header title="Settings" />
           <main className="p-4">
             
   

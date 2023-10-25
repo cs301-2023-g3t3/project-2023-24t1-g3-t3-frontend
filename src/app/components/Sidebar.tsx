@@ -1,10 +1,15 @@
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FiMoreHorizontal } from 'react-icons/fi';
 
 export default function Sidebar() {
-    const user = 'Dries Vincent';
-    const imageUrl = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+    const { data: session } = useSession();
+
+
+    const user = session?.user?.name;
+    const imageUrl = session?.user?.image || '/images/default-profile.png';
+    const role = "Manager"
     
     return (
         <aside className="flex flex-col bg-white w-64 p-4 shadow rounded hidden-mobile">
@@ -37,7 +42,7 @@ export default function Sidebar() {
                             
                             <div className='flex flex-col'>
                                 <h1 className='ml-4 text-l leading-6 text-gray-900'>{user}</h1>
-                                <h2 className='ml-4 text-sm leading-6 text-gray-500'>Manager</h2>
+                                <h2 className='ml-4 text-sm leading-6 text-gray-500'>{role}</h2>
                             </div>
                         </div>
                         <FiMoreHorizontal className='h-5 w-5 text-gray-500 cursor-pointer' />
