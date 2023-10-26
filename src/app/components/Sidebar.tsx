@@ -7,10 +7,10 @@ export default function Sidebar() {
     const { data: session } = useSession();
 
 
-    const user = session?.user?.name;
-    const imageUrl = session?.user?.image || '/images/default-profile.png';
-    const role = "Manager"
-    
+    const email = session?.user?.email?.split('@')[0];
+    const role = session?.role || "Role not found";
+    console.log(session);
+
     return (
         <aside className="flex flex-col bg-white w-64 p-4 shadow rounded hidden-mobile">
             <Link href="/dashboard">    
@@ -40,12 +40,17 @@ export default function Sidebar() {
                 </ul>
                 <div className='flex flex-col justify-end flex-grow'>
                     <div className='flex justify-between items-center'>
-                        <div className='flex items-center'>
-                            <img className="h-12 w-12 flex-none rounded-full bg-gray-50" src={imageUrl} alt="" />
-                            
+                        <Image 
+                            src="/images/profile.jpg"
+                            alt="Profile Picture"
+                            width={50}
+                            height={50}
+                            className='rounded-full'
+                        />
+                        <div className='flex w-3/4 items-center'>
                             <div className='flex flex-col'>
-                                <h1 className='ml-4 text-l leading-6 text-gray-900'>{user}</h1>
-                                <h2 className='ml-4 text-sm leading-6 text-gray-500'>{role}</h2>
+                                <h1 className='ml-2 text-l leading-6 text-gray-900'>{email}</h1>
+                                <h2 className='ml-2 text-sm leading-6 text-gray-500'>{role}</h2>
                             </div>
                         </div>
                         <FiMoreHorizontal className='h-5 w-5 text-gray-500 cursor-pointer' />

@@ -29,11 +29,8 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://vm1swtn9ii.execute-api.ap-southeast-1.amazonaws.com/test/logs/get_logs?logGroup=" + logGroup + "&pageSize=" + pages
+          "https://vm1swtn9ii.execute-api.ap-southeast-1.amazonaws.com/logs/get_logs?logGroup=" + logGroup + "&pageSize=" + pages
           );
-          
-          console.log(response.data.logs);
-
           setLogs(response.data.logs);
           setIsLoading(false);
         } catch (err: any) {
