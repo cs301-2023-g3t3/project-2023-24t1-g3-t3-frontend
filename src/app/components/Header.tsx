@@ -5,8 +5,8 @@ export default function Header({ title }: { title: string }) {
   const router = useRouter();
 
   const handleLogout = () => {
-    signOut();
     router.push('/');
+    signOut();
   };
   
   return (        

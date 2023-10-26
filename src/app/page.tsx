@@ -10,6 +10,7 @@ export default function Protected() {
   const router = useRouter();
 
   if (session) {
+
     router.push('/dashboard'); 
   }
 

@@ -23,7 +23,6 @@ interface Request {
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
 
   if (!session) {
