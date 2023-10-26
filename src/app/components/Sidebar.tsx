@@ -3,12 +3,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FiMoreHorizontal } from 'react-icons/fi';
 
+interface CustomSession {
+    user: {
+        email: string;
+    };
+    role: string;
+}
+
 export default function Sidebar() {
     const { data: session } = useSession();
 
-
     const email = session?.user?.email?.split('@')[0];
-    const role = session?.role || "Role not found";
+    // Assuming role will be present at runtime.
+    const role = ((session as unknown) as CustomSession)?.role || "Role not found";
     console.log(session);
 
     return (
