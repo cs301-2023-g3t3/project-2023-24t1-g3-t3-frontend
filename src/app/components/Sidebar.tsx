@@ -6,6 +6,7 @@ import { FiMoreHorizontal } from 'react-icons/fi';
 interface CustomSession {
     user: {
         email: string;
+    
     };
     role: string;
 }
