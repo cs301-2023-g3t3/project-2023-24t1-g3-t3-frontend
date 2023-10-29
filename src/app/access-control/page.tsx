@@ -45,6 +45,7 @@ export default function Settings() {
         {/* Main content */}
         <div className="flex-1 overflow-y-auto h-screen">
           <Header title="Access Control" />
+          
           <main className="p-4">
             <div className="flex flex-col bg-white rounded p-4">
               <div className="flex flex-col mb-4">
