@@ -39,9 +39,7 @@ export default function Sidebar() {
                     <li className="mb-2">
                         <a href="/logs" className="text-gray-600 hover:text-gray-800">Logs</a>
                     </li>
-                    <li className="mb-2">
-                        <a href="/settings" className="text-gray-600 hover:text-gray-800">Settings</a>
-                    </li>
+            
                     <li className="mb-2">
                         <a href="/access-control" className="text-gray-600 hover:text-gray-800">Access Control</a>
                     </li>

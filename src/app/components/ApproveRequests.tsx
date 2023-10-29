@@ -47,12 +47,12 @@ export default function ApproveRequests() {
                     <td className="text-gray-500 border px-4 py-3">{request.user}</td>
                     <td className="text-gray-500 border px-4 py-3">{request.request}</td>
                     <td className={`border px-4 py-3 ${request.status === 'Pending' ? 'text-yellow-500' : 'text-green-500'}`}>{request.status}</td>
-                    <td className="border px-4 py-3 flex gap-2">
+                    <td className="border px-4 py-3 flex-grow gap-2">
                     {request.status === 'Pending' && 
-                        <>
-                        <button className="bg-green-500 text-white px-3 py-1 rounded shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">Approve</button>
-                        <button className="bg-red-500 text-white px-3 py-1 rounded shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">Deny</button>
-                        </>
+                        <div className="flex justify-between gap-4">
+                            <button className="w-full bg-green-500 text-white px-3 py-1 rounded shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">Approve</button>
+                            <button className="w-full bg-red-500 text-white px-3 py-1 rounded shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">Deny</button>
+                        </div>
                     }
                     </td>
                 </tr>
