@@ -43,7 +43,7 @@ export default function Login() {
                     <p className="mt-6 text-lg leading-8 text-gray-600">By G3T3: Adrian, Jeremy, Kevin, Samuel, Samuel, Yao Long.</p>
                     <div className="mt-10 flex items-center justify-center gap-x-6">
 
-                        <a href="#" onClick={() => signIn('cognito')} className="rounded-md bg-blue-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Get started</a>
+                        <a href="#" onClick={() => signIn('cognito', { callbackUrl: '/dashboard' })} className="rounded-md bg-blue-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Get started</a>
                         <a href="#" className="text-sm font-semibold leading-6 text-gray-900">Project Doc <span aria-hidden="true">→</span></a>
                     </div>
                 </div>
