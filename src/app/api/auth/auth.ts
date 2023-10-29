@@ -6,10 +6,12 @@ import { withAuth } from "next-auth/middleware"
 
 interface CustomProfile extends Profile {
   role: string;
+  id: string;
 }
 
 interface CustomSession extends Session {
   role: string;
+  userId: string;
 }
 
 // You'll need to import and pass this
@@ -29,6 +31,7 @@ export const config = {
           // Add role from the token to JWT storage (runs on sign-in)
           if (account && profile) {
             token.role = customProfile.role; // 'role' is coming from your JWT token
+            token.userId = customProfile.id;
           }
           return token;
         },
@@ -36,6 +39,7 @@ export const config = {
           // Add role to session (runs every session refresh)
           const customSession = session as CustomSession;
           customSession.role = token.role as string;
+          customSession.userId = token.sub as string;
           return customSession;
         },
         async signIn({user, account, profile, email, credentials}) {

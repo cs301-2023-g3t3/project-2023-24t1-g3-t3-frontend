@@ -6,18 +6,19 @@ import { FiMoreHorizontal } from 'react-icons/fi';
 interface CustomSession {
     user: {
         email: string;
-    
+        id: string;
     };
     role: string;
 }
 
 export default function Sidebar() {
     const { data: session } = useSession();
-
+    console.log(session);
+    
     const email = session?.user?.email?.split('@')[0];
     // Assuming role will be present at runtime.
     const role = ((session as unknown) as CustomSession)?.role || "Role not found";
-    console.log(session);
+    
 
     return (
         <aside className="flex flex-col bg-white w-64 p-4 shadow rounded hidden-mobile">
