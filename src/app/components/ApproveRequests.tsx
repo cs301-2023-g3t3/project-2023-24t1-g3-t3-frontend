@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 
 interface Request {
@@ -7,27 +8,38 @@ interface Request {
     status: string;
 }
 
-export default function ApproveRequests() {
-    const [requests, setRequests] = useState<Request[]>([]);  // Specify the type here
+export default function ApproveRequests({ session }: any) {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const [requests, setRequests] = useState<Request[]>([]);
     const [loading, setLoading] = useState(true);
-  
+    const [error, setError] = useState(null);
+
+    const [isEmpty, setIsEmpty] = useState(false);
+
     useEffect(() => {
         fetchRequests();
     }, []);
-  
+
     const fetchRequests = async () => {
         // Fetch requests from backend/API here
-        // For now, using a mockup static data
-        const mockupData: Request[] = [
-            { id: 1, user: 'John', request: 'Request to create an account', status: 'Pending' },
-            { id: 2, user: 'Jane', request: 'Request to delete an account', status: 'Approved' },
-            // ... more data
-        ];
-  
-        setRequests(mockupData);
+        axios.get(`${apiUrl}/makerchecker/record/to-approve/${session.userId}`, {
+            headers: {
+                Authorization: `Bearer ${session.accessToken}`,
+            },
+        }).then((response) => {
+            console.log(response.data);
+        }).catch((error) => {
+            if (error.response.status === 404) {
+                setIsEmpty(true);
+            } else {
+                setError(error.response.data.data.data);
+            }
+            
+        });
+
+        // setRequests(mockupData);
         setLoading(false);
     };
-  
     return (
         <section className="to-approve-requests w-1/2">
             <h2 className="text-2xl font-semibold mb-6">Requests to Approve</h2>
@@ -59,6 +71,8 @@ export default function ApproveRequests() {
                 ))}
             </tbody>
             </table>
+            {isEmpty && (<div className="mt-4 text-center text-gray-500">No requests to approve</div>)}
+            {error && (<div className="mt-4 text-center text-red-500">{error}</div>)}
         </section>
     );
 }

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import axios from "axios";
 
 interface Request {
     id: number;
@@ -7,9 +9,13 @@ interface Request {
     status: string;
 }
 
-export default function MyRequests() {
+export default function MyRequests({ session }: any) {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const [requests, setRequests] = useState<Request[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const [isEmpty, setIsEmpty] = useState(false);
 
     useEffect(() => {
         fetchRequests();
@@ -17,14 +23,23 @@ export default function MyRequests() {
 
     const fetchRequests = async () => {
         // Fetch requests from backend/API here
-        // For now, using a mockup static data
-        const mockupData: Request[] = [
-            { id: 1, user: 'John', request: 'Request to create an account', status: 'Pending' },
-            { id: 2, user: 'Jane', request: 'Request to delete an account', status: 'Approved' },
-            // ... more data
-        ];
+        axios.get(`${apiUrl}/makerchecker/record/user/${session.userId}`, {
+            headers: {
+                Authorization: `Bearer ${session.accessToken}`,
+            },
+        }).then((response) => {
+            console.log(response.data);
+        }).catch((error) => {
+            if (error.response.status === 404) {
+                setIsEmpty(true);
+            } else {
+                setError(error.response.data.data.data);
+            }
+            
+        });
 
-        setRequests(mockupData);
+
+        // setRequests(mockupData);
         setLoading(false);
     };
 
@@ -52,8 +67,11 @@ export default function MyRequests() {
                     </td>
                 </tr>
                 ))}
+                
             </tbody>
             </table>
+            {isEmpty && (<div className="mt-4 text-center text-gray-500">No requests made yet.</div>)}
+            {error && (<div className="mt-4 text-center text-red-500">{error}</div>)}
         </section>
     );
 }

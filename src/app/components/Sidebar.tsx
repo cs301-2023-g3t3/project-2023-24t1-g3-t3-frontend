@@ -13,12 +13,12 @@ interface CustomSession {
 
 export default function Sidebar() {
     const { data: session } = useSession();
-    console.log(session);
-    
+
     const email = session?.user?.email?.split('@')[0];
     // Assuming role will be present at runtime.
     const role = ((session as unknown) as CustomSession)?.role || "Role not found";
-    
+    const image = session?.user?.image || '/images/default-profile.png';
+    const name = session?.user?.name || email;
 
     return (
         <aside className="flex flex-col bg-white w-64 p-4 shadow rounded hidden-mobile">
@@ -48,7 +48,7 @@ export default function Sidebar() {
                 <div className='flex flex-col justify-end flex-grow'>
                     <div className='flex justify-between items-center'>
                         <Image 
-                            src="/images/profile.jpg"
+                            src={image} 
                             alt="Profile Picture"
                             width={50}
                             height={50}
@@ -56,8 +56,8 @@ export default function Sidebar() {
                         />
                         <div className='flex w-3/4 items-center'>
                             <div className='flex flex-col'>
-                                <h1 className='ml-2 text-l leading-6 text-gray-900'>{email}</h1>
-                                <h2 className='ml-2 text-sm leading-6 text-gray-500'>{role}</h2>
+                                <h1 className='ml-4 text-l leading-6 text-gray-900'>{name}</h1>
+                                <h2 className='ml-4 text-sm leading-6 text-gray-500'>{role}</h2>
                             </div>
                         </div>
                         <FiMoreHorizontal className='h-5 w-5 text-gray-500 cursor-pointer' />

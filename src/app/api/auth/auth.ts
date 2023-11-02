@@ -5,13 +5,21 @@ import CognitoProvider from "next-auth/providers/cognito"
 import { withAuth } from "next-auth/middleware"
 
 interface CustomProfile extends Profile {
+  user_id: string;
+  name: string;
+  email: string;
+  image: string;
   role: string;
-  id: string;
 }
 
 interface CustomSession extends Session {
   role: string;
   userId: string;
+  accessToken: string;
+}
+
+interface CustomAccount {
+  access_token: string;
 }
 
 // You'll need to import and pass this
@@ -28,10 +36,13 @@ export const config = {
     callbacks: {
         async jwt({token, user, account, profile}) {
           const customProfile = profile as CustomProfile;
+          const customAccount = account as CustomAccount;
+
           // Add role from the token to JWT storage (runs on sign-in)
           if (account && profile) {
             token.role = customProfile.role; // 'role' is coming from your JWT token
-            token.userId = customProfile.id;
+            token.userId = customProfile.user_id;
+            token.accessToken = customAccount.access_token;
           }
           return token;
         },
@@ -39,7 +50,8 @@ export const config = {
           // Add role to session (runs every session refresh)
           const customSession = session as CustomSession;
           customSession.role = token.role as string;
-          customSession.userId = token.sub as string;
+          customSession.userId = token.userId as string;
+          customSession.accessToken = token.accessToken as string;
           return customSession;
         },
         async signIn({user, account, profile, email, credentials}) {
@@ -48,6 +60,7 @@ export const config = {
     },
     pages: {
         signIn: '/',
+        signOut: '/',
     },
     debug: true,
         

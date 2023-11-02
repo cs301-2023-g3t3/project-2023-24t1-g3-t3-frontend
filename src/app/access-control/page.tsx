@@ -11,16 +11,28 @@ import { useSession } from 'next-auth/react';
 import Forbidden from '../components/Forbidden';
 import Header from '../components/Header';
 
-export default function Settings() {
-  const { data: session } = useSession();
-  const [selectedRole, setSelectedRole] = useState('Engineer');
+interface CustomSession {
+  user: {
+    email: string;
+    id: string;
+  };
+  role: string;
+  userId: string;
+  accessToken: string;
+}
 
-  const roles = [
-    'Engineer',
-    'Product Manager',
-    'Manager',
-    'Owner',
-  ];
+export default function AccessControl() {
+  const { data: session } = useSession();
+  const customSession = ((session as unknown) as CustomSession);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  const headers = {
+    'Authorization': `Bearer ${customSession.accessToken}`
+  };
+
+  const [selectedRole, setSelectedRole] = useState(customSession.role);
+
+  const [roles, setRoles] = useState([]);
   
   const rolePermissions: {[key: string]: string[]} = {
     'Owner': [],
@@ -29,7 +41,17 @@ export default function Settings() {
     'Engineer': ['Create User', 'Update User Details', 'Delete User', 'Update Points'],
   };
   
-
+  useEffect(() => {
+    axios.get(apiUrl + '/users/roles', { headers })
+    .then((response) => {
+        console.log(response.data);
+        const roles = response.data.map((role: { name: string; }) => role.name);
+        setRoles(roles);
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+  }, []);
   
   if (!session) {
     return (
