@@ -8,170 +8,140 @@ import Header from '../components/Header';
 import Forbidden from '../components/Forbidden';
 import { data } from 'autoprefixer';
 import { DateTime } from 'luxon';
+import LogCard from '../components/logs/LogCard';
+import Spinner from '../components/Spinner';
+import SearchBar from '../components/logs/SearchBar';
 
 interface CustomSession {
-  user: {
-    email: string;
-    id: string;
-  };
-  role: string;
-  userId: string;
-  accessToken: string;
+	user: {
+		email: string;
+		id: string;
+	};
+	role: string;
+	userId: string;
+	accessToken: string;
 }
 
-interface Log {
-  message: string;
-  timestamp: string;
-  CLIENT_IP: string;
-  LATENCY: string;
-  METHOD: string;
-  STATUS: string;
-  URI: string;
-  USER_AGENT: string;
-  // ...other properties
+export interface LogGroup {
+	[key: string]: string;
+}
+
+export interface Log {
+	ACTION: string;
+	AMOUNT: string;
+	LATENCY: string;
+	MESSAGE: string;
+	METHOD: string;
+	SOURCE_IP: string;
+	STATUS: string;
+	URI: string;
+	USER_AGENT: string;
+	level: string;
+	msg: string;
+	time: string;
+}
+
+interface Query {
+	results: LogGroup[][];
+	status: string;
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
-  const customSession = session as unknown as CustomSession;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+	const { data: session } = useSession();
+	const customSession = session as unknown as CustomSession;
+	const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  const headers = useMemo(() => {
-    return { 'Authorization': `Bearer ${customSession.accessToken}` };
-  }, [customSession.accessToken]);
+	const headers = useMemo(() => {
+		return { 'Authorization': `Bearer ${customSession.accessToken}` };
+	}, [customSession.accessToken]);
 
-  const [logs, setLogs] = useState<Log[]>([]);
-  const [error, setError] = useState<Error | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [service, setService] = useState<string>('points');
-  const [clientIp, setClientIp] = useState('');
-  const [method, setMethod] = useState('');
-  const [status, setStatus] = useState('');
-  const [uri, setUri] = useState('');
-  const [userAgent, setUserAgent] = useState('');
-  const [latencyMin, setLatencyMin] = useState('');
-  const [latencyMax, setLatencyMax] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+	const [logGroups, setLogGroups] = useState<LogGroup[][]>([]);
+	const [loadingLogs, setLoadingLogs] = useState(true);
+	const [query, setQuery] = useState('');
+	const [search, setSearch] = useState('');
+	const [start, setStart] = useState(DateTime.now().minus({ days: 7 }).toFormat('yyyy-MM-dd') as string);
+	const [end, setEnd] = useState(DateTime.now().toFormat('yyyy-MM-dd') as string);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/logs/get_logs?service=${service}&start=${Math.floor(DateTime.now().minus({ days: 10 }).toSeconds())}&end=${Math.floor(DateTime.now().toSeconds())}`,{ headers });
-        console.log(response.data);
-        // setLogs(response.data);
-        setIsLoading(false);
-      } catch (err) {
-        setError(err as Error);
-      }
-    };
-    fetchData();
-  }, [apiUrl, headers, searchTerm, clientIp, method, status, uri, userAgent, latencyMin, latencyMax]);
+	const startQuery = async () => {
+		try {
+			setLoadingLogs(true);
+			const startTime = Math.floor(DateTime.fromFormat(start, 'yyyy-MM-dd').toMillis());
+			const endTime = Math.floor(DateTime.fromFormat(end, 'yyyy-MM-dd').toMillis());
+			const response = await axios.get(`${apiUrl}/logs/start?service=${"points"}&start=${startTime}&end=${endTime}&query=${search}`,{ headers });
+			setQuery(response.data.queryId);
+		} catch (err) {
+			
+		}
+	};
 
-  const parseLatency = (latency: string) => parseFloat(latency.replace('ms', ''));
+	useEffect(() => {
+		startQuery();
+	}, []);
 
-  const filteredLogs = logs.filter(log => {
-    const matchesSearchTerm = log.message.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesClientIp = log.CLIENT_IP.includes(clientIp);
-    const matchesMethod = log.METHOD.includes(method);
-    const matchesStatus = log.STATUS.includes(status);
-    const matchesUri = log.URI.includes(uri);
-    const matchesUserAgent = log.USER_AGENT.includes(userAgent);
-    const latency = parseLatency(log.LATENCY);
-    const isWithinLatencyRange = (latencyMin === '' || latency >= parseLatency(latencyMin)) &&
-                                 (latencyMax === '' || latency <= parseLatency(latencyMax));
+	useEffect(() => {
+		if (query) {
+			const retrieveQuery = async () => {
+				try {
+					const response = await axios.get(`${apiUrl}/logs/retrieve?queryId=${query}`,{ headers });
+					return response.data;
+				} catch (err) {
+					
+				}
+			}
 
-    return matchesSearchTerm && matchesClientIp && matchesMethod && matchesStatus &&
-           matchesUri && matchesUserAgent && isWithinLatencyRange;
-  });
+			const intervalId = setInterval(async () => {
+				const query = await retrieveQuery();
+				if (query.status === 'Complete') {
+					setLogGroups(query.results);
+					setLoadingLogs(false);
+					clearInterval(intervalId);
+				}
+			}, 1000);
 
-  if (!session) {
-    return <Forbidden />;
-  }
+			return () => clearInterval(intervalId);
+		}
+	}, [query]);
 
-  return (
-    <div className="bg-gray-100 h-screen flex">
-      <Sidebar />
-      <div className="flex-1">
-        <Header title="Access Control Logs" />
-        <main className="p-4">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex flex-wrap items-center">
-              <input
-                type="text"
-                placeholder="Search logs..."
-                className="ml-2 p-1 border rounded"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by Client IP..."
-                className="ml-2 p-1 border rounded"
-                value={clientIp}
-                onChange={e => setClientIp(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by Method..."
-                className="ml-2 p-1 border rounded"
-                value={method}
-                onChange={e => setMethod(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by Status..."
-                className="ml-2 p-1 border rounded"
-                value={status}
-                onChange={e => setStatus(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by URI..."
-                className="ml-2 p-1 border rounded"
-                value={uri}
-                onChange={e => setUri(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by User Agent..."
-                className="ml-2 p-1 border rounded"
-                value={userAgent}
-                onChange={e => setUserAgent(e.target.value)}
-              />
-              <input
-                type="number"
-                placeholder="Min Latency (ms)..."
-                className="ml-2 p-1 border rounded"
-                value={latencyMin}
-                onChange={e => setLatencyMin(e.target.value)}
-              />
-              <input
-                type="number"
-                placeholder="Max Latency (ms)..."
-                className="ml-2 p-1 border rounded"
-                value={latencyMax}
-                onChange={e => setLatencyMax(e.target.value)}
-              />
-            </div>
-          </div>
+	if (!session) {
+		return <Forbidden />;
+	}
 
-          <div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto'>
-            <ul role="list" className="divide-y divide-gray-100">
-              {error && <p>Error loading data: {error.message}</p>}
-              {!error && isLoading ? (
-                <p>Loading...</p>
-              ) : (
-                filteredLogs.map((log, index) => (
-                  <li key={index} className="flex justify-between gap-x-6 py-5">
-                    <p className="text-sm leading-6 text-gray-900">{log.message}</p>
-                    <p className="text-sm leading-6 text-gray-500">{log.timestamp}</p>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
+	return (
+		<div className="bg-gray-100 h-screen flex">
+			<Sidebar />
+			<div className="flex-1">
+				<Header title="Access Control Logs" />
+				<main className="p-4">
+					<div className="flex justify-between items-center mb-4">
+						<div className="flex flex-wrap items-center w-full">
+							<SearchBar 
+								search={search} 
+								setSearch={setSearch}
+								start={start}
+								setStart={setStart}
+								end={end}
+								setEnd={setEnd}
+								startQuery={startQuery} 
+							/>
+						</div>
+					</div>
+					{ loadingLogs ? (
+						<div className='flex w-full justify-center'>
+							<div className={ `animate-spin rounded-full ${"h-10"} ${"w-10"} border-b border-black` } />
+						</div>
+					) : (
+						<div className='flex flex-col gap-4'>
+							{ logGroups.map((logGroup, idx) => {
+								return (
+									<div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto'>
+										<LogCard logGroup={logGroup} key={ `log-card-${idx}` } />
+									</div>
+								)
+							}) }
+						</div>
+					)}
+				</main>
+			</div>
+		</div>
+	);
 }
