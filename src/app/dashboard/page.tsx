@@ -92,7 +92,7 @@ export default function DashboardPage() {
         signOut({callbackUrl: '/'});
         return; // Exit if the token is expired
       }
-  
+      console.log(customSession.accessToken);
       const headers = {
         'Authorization': `Bearer ${customSession.accessToken}`
       };
@@ -284,11 +284,28 @@ export default function DashboardPage() {
           </div>
           
           
-          <div className="flex mobile:flex-col justify-between bg-white rounded-lg shadow-lg p-6 gap-4 text-gray-700 mt-4">
+          {/* <div className="flex lg:flex-row md:flex-col justify-between bg-white rounded-lg shadow-lg p-6 gap-4 text-gray-700 mt-4">
             <MyRequests session={session} />
             <ApproveRequests session={session} />
-          </div>
-          
+          </div> */}
+          <>
+            <style>
+              {`
+                @media (min-width: 1365px) {
+                  .responsive-flex {
+                    display: flex;
+                    flex-direction: row !important;
+                  }
+                }
+              `}
+            </style>
+            <div className="flex flex-col lg:flex-row justify-between bg-white rounded-lg shadow-lg p-6 gap-4 text-gray-700 mt-4 responsive-flex">
+              <MyRequests session={session} />
+              <ApproveRequests session={session} />
+            </div>
+          </>
+
+
           
         </main>
       </div>

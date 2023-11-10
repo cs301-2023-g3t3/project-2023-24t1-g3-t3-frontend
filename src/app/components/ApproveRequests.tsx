@@ -21,7 +21,7 @@ export default function ApproveRequests({ session }: any) {
     }, []);
 
     const fetchRequests = async () => {
-        // Fetch requests from backend/API here
+        // // Fetch requests from backend/API here
         axios.get(`${apiUrl}/makerchecker/record/to-approve/${session.userId}`, {
             headers: {
                 Authorization: `Bearer ${session.accessToken}`,
@@ -29,11 +29,11 @@ export default function ApproveRequests({ session }: any) {
         }).then((response) => {
             console.log(response.data);
         }).catch((error) => {
-            if (error.response.status === 404) {
-                setIsEmpty(true);
-            } else {
-                setError(error.response.data.data.data);
-            }
+            // if (error.response.status === 404) {
+            //     setIsEmpty(true);
+            // } else {
+            //     setError(error);
+            // }
             
         });
 

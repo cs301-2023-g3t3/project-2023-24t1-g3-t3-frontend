@@ -20,6 +20,7 @@ interface CustomSession extends Session {
 
 interface CustomAccount {
   access_token: string;
+  id_token: string;
 }
 
 // You'll need to import and pass this
