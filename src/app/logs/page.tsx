@@ -256,8 +256,8 @@ export default function DashboardPage() {
 								{ logGroups.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE).map((logGroup, idx) => {
 									const ip = JSON.parse(logGroup[1].value).SOURCE_IP;
 									return (
-										<div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto'>
-											<LogCard logGroup={logGroup} location={locations[ip]} key={ `log-card-${idx}` } />
+										<div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto' key={ `log-card-${idx}` }>
+											<LogCard logGroup={logGroup} location={locations[ip]} />
 										</div>
 									)
 								}) }
