@@ -47,7 +47,7 @@ export default function AccessControl() {
   const { data: session } = useSession();
   const customSession = ((session as unknown) as CustomSession);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
+  
 
   const headers = {
     'Authorization': `Bearer ${customSession.accessToken}`
@@ -68,11 +68,12 @@ export default function AccessControl() {
     Promise.all([
       axios.get(apiUrl + '/users/roles', { headers }),
       axios.get(apiUrl + '/users/role-access', { headers }),
-      axios.get(apiUrl + '/users/access-points', { headers })
+      axios.get(apiUrl + '/users/access-points', { headers }),
     ]).then((responses) => {
       const roles = responses[0].data;
       setRoles(roles);
-      const roleToAccessPointMapping = responses[1].data;    
+      const roleToAccessPointMapping = responses[1].data;
+      // console.log(roleToAccessPointMapping);
       const accessPoints = responses[2].data;
       // console.log(roleToAccessPointMapping);
       // Step 1: Map Access Point IDs to Permission Names
@@ -82,8 +83,6 @@ export default function AccessControl() {
       });
 
       // console.log(accessPointToPermission);
-
-      
 
       // Step 2: For each role, they will have all the access points, but
       // if it exists in roleToAccessPointMapping, then it is checked.
@@ -166,7 +165,23 @@ export default function AccessControl() {
     // Send changes to the server
     console.log('Sending changes to the server:', changes);
 
+    // format the changes to match the API
+    // e.g. {roleId: 1, apId: 4}
+
+    const formattedChanges: RoleMapping[] = [];
+
+    Object.keys(changes).forEach((role: string) => {
+      const roleId = roles.find((r: Role) => r.name === role)?.id;
+      if (roleId) {
+        
+      }
+      
+    });
+
+    console.log(formattedChanges);
     // axios.post(apiUrl + '/users/role-access', changes, { headers });
+
+
 
   }
   
@@ -226,7 +241,6 @@ export default function AccessControl() {
                               <tr>
                                   <th className="px-4 py-2 text-left">Permission</th>
                                   <th className="px-4 py-2 text-left">Allow Access</th>
-                                  <th className="px-4 py-2 text-left">Require Authorization</th>
                               </tr>
                           </thead>
                           <tbody>
@@ -245,12 +259,6 @@ export default function AccessControl() {
                                           type="checkbox" 
                                           checked={isChecked} 
                                           onChange={(e) => handleCheckboxChange(selectedRole, permission, e.target.checked)}
-                                        />
-                                      </td>
-                                      <td className="px-4 py-2">
-                                        <input 
-                                          type="checkbox" 
-                                          // Logic for second checkbox if needed
                                         />
                                       </td>
                                     </tr>

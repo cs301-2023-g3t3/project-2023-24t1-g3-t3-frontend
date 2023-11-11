@@ -27,21 +27,22 @@ export default function MyRequests({ session }: any) {
 
     const fetchRequests = async () => {
         // Fetch requests from backend/API here
-        axios.get(`${apiUrl}/makerchecker/record/pending-approve/${session.userId}`, {
+        axios.get(`${apiUrl}/makerchecker/record/pending-approve`, {
             headers: {
                 Authorization: `Bearer ${session.accessToken}`,
+                'X-IDTOKEN': `${session.id_token}`,
             },
         }).then((response) => {
             console.log(response.data);
             // setRequests(response.data);
 
         }).catch((error) => {
-            // if (error.response.status === 404) {
-            //     setIsEmpty(true);
-            // } 
-            // else {
-            //     setError(error.response.data.message);
-            // }
+            if (error.response.status === 404) {
+                setIsEmpty(true);
+            } 
+            else {
+                setError(error.response.data.message);
+            }
             
         });
 

@@ -44,6 +44,10 @@ export default function Sidebar() {
                     <li className="mb-2">
                         <a href="/access-control" className="text-gray-600 hover:text-gray-800">Access Control</a>
                     </li>
+
+                    <li className="mb-2">
+                        <a href="/maker-checker" className="text-gray-600 hover:text-gray-800">Maker Checker</a>
+                    </li>
                 </ul>
                 <div className='flex flex-col justify-end flex-grow'>
                     <div className='flex justify-between items-center'>

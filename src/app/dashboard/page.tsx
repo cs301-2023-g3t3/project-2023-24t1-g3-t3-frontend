@@ -25,6 +25,7 @@ interface CustomSession {
   role: string;
   userId: string;
   accessToken: string;
+  id_token: string;
 }
 
 interface Request {
@@ -87,16 +88,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (customSession) {
+      console.log(customSession.accessToken)
+      console.log(customSession.id_token);
       const decoded = jwt.decode(customSession.accessToken) as jwt.JwtPayload;
       if (decoded && decoded.exp && decoded.exp * 1000 < Date.now()) {
         signOut({callbackUrl: '/'});
         return; // Exit if the token is expired
       }
-      console.log(customSession.accessToken);
+      
       const headers = {
-        'Authorization': `Bearer ${customSession.accessToken}`
+        'Authorization': `Bearer ${customSession.accessToken}`,
+        'X-IDTOKEN': `${customSession.id_token}`
       };
-  
+
       Promise.all([
         axios.get(`${apiUrl}/users/accounts`, { headers }),
         axios.get(`${apiUrl}/points/accounts`, { headers })
