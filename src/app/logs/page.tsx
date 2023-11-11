@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from 'react';
+import { use, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import Sidebar from '../components/Sidebar';
@@ -8,170 +8,303 @@ import Header from '../components/Header';
 import Forbidden from '../components/Forbidden';
 import { data } from 'autoprefixer';
 import { DateTime } from 'luxon';
+import LogCard from '../components/logs/LogCard';
+import Spinner from '../components/Spinner';
+import SearchBar from '../components/logs/SearchBar';
+import EditRetentionModal from '../components/logs/EditRetentionModal';
 
 interface CustomSession {
-  user: {
-    email: string;
-    id: string;
-  };
-  role: string;
-  userId: string;
-  accessToken: string;
+	user: {
+		email: string;
+		id: string;
+	};
+	role: string;
+	userId: string;
+	accessToken: string;
 }
 
-interface Log {
-  message: string;
-  timestamp: string;
-  CLIENT_IP: string;
-  LATENCY: string;
-  METHOD: string;
-  STATUS: string;
-  URI: string;
-  USER_AGENT: string;
-  // ...other properties
+export interface LogGroup {
+	[key: string]: string;
 }
+
+export interface Log {
+	ACTION: string;
+	AMOUNT?: string;
+	LATENCY: string;
+	MESSAGE: string;
+	METHOD: string;
+	SOURCE_IP: string;
+	STATUS: string;
+	URI: string;
+	USER_AGENT: string;
+	USER_DETAILS?: {
+		id: string;
+		role: string
+	};
+	UPDATED_USER_DETAILS?: {
+		id: string;
+		role: string
+	};
+	level: string;
+	msg: string;
+	time: string;
+}
+
+export interface Location {
+    company: {
+        domain: string;
+        name: string;
+    },
+    location: {
+        city: string;
+        country: string;
+    },
+    is_vpn: boolean;
+    is_abuser: boolean;
+}
+
+export interface Locations {
+	[key: string]: Location;
+}
+
+interface Query {
+	results: LogGroup[][];
+	status: string;
+}
+
+const PAGE_SIZE = 25;
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
-  const customSession = session as unknown as CustomSession;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+	const { data: session } = useSession();
+	const customSession = session as unknown as CustomSession;
+	const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  const headers = useMemo(() => {
-    return { 'Authorization': `Bearer ${customSession.accessToken}` };
-  }, [customSession.accessToken]);
+	const headers = useMemo(() => {
+		return { 'Authorization': `Bearer ${customSession.accessToken}` };
+	}, [customSession.accessToken]);
 
-  const [logs, setLogs] = useState<Log[]>([]);
-  const [error, setError] = useState<Error | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [service, setService] = useState<string>('points');
-  const [clientIp, setClientIp] = useState('');
-  const [method, setMethod] = useState('');
-  const [status, setStatus] = useState('');
-  const [uri, setUri] = useState('');
-  const [userAgent, setUserAgent] = useState('');
-  const [latencyMin, setLatencyMin] = useState('');
-  const [latencyMax, setLatencyMax] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+	const [logGroups, setLogGroups] = useState<LogGroup[][]>([]);
+	const [loadingLogs, setLoadingLogs] = useState(true);
+	const [query, setQuery] = useState('');
+	const [search, setSearch] = useState('');
+	const [start, setStart] = useState(DateTime.now().minus({ days: 7 }).toFormat('yyyy-MM-dd') as string);
+	const [end, setEnd] = useState(DateTime.now().toFormat('yyyy-MM-dd') as string);
+	const [locations, setLocations] = useState<Locations>({});
+	const [page, setPage] = useState(0);
+	const [isNewPage, setIsNewPage] = useState(false);
+	const [maxPage, setMaxPage] = useState(0);
+	const [isDone, setIsDone] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/logs/get_logs?service=${service}&start=${Math.floor(DateTime.now().minus({ days: 10 }).toSeconds())}&end=${Math.floor(DateTime.now().toSeconds())}`,{ headers });
-        console.log(response.data);
-        // setLogs(response.data);
-        setIsLoading(false);
-      } catch (err) {
-        setError(err as Error);
-      }
-    };
-    fetchData();
-  }, [apiUrl, headers, searchTerm, clientIp, method, status, uri, userAgent, latencyMin, latencyMax]);
+	const [retentionInDays, setRetentionInDays] = useState(0);
+	const [retentionModalOpen, setRetentionModalOpen] = useState(false);
+	const [loadingRetention, setLoadingRetention] = useState(true);
 
-  const parseLatency = (latency: string) => parseFloat(latency.replace('ms', ''));
+	useEffect(() => {
+		const getRetention = async () => {
+			try {
+				setLoadingRetention(true);
+				const response = await axios.get(`${apiUrl}/logs/retention`, { headers });
+				setRetentionInDays(response.data.retentionInDays);
+			} catch (err) {
+				
+			} finally {
+				setLoadingRetention(false);
+			}
+		}
 
-  const filteredLogs = logs.filter(log => {
-    const matchesSearchTerm = log.message.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesClientIp = log.CLIENT_IP.includes(clientIp);
-    const matchesMethod = log.METHOD.includes(method);
-    const matchesStatus = log.STATUS.includes(status);
-    const matchesUri = log.URI.includes(uri);
-    const matchesUserAgent = log.USER_AGENT.includes(userAgent);
-    const latency = parseLatency(log.LATENCY);
-    const isWithinLatencyRange = (latencyMin === '' || latency >= parseLatency(latencyMin)) &&
-                                 (latencyMax === '' || latency <= parseLatency(latencyMax));
+		getRetention();
+	}, [])
 
-    return matchesSearchTerm && matchesClientIp && matchesMethod && matchesStatus &&
-           matchesUri && matchesUserAgent && isWithinLatencyRange;
-  });
+	const startQuery = async () => {
+		try {
+			setLoadingLogs(true);
+			setPage(0);
+			setIsDone(false);
+			const startTime = Math.floor(DateTime.fromFormat(start, 'yyyy-MM-dd').toMillis());
+			const endTime = Math.floor(DateTime.fromFormat(end, 'yyyy-MM-dd').toMillis());
+			const response = await axios.get(`${apiUrl}/logs/start?service=${"points"}&start=${startTime}&end=${endTime}&query=${search}`,{ headers });
+			setQuery(response.data.queryId);
+		} catch (err) {
+			
+		}
+	};
 
-  if (!session) {
-    return <Forbidden />;
-  }
+	const startNewPagesQuery = async () => {
+		try {
+			setLoadingLogs(true);
+			setIsNewPage(true);
+			setPage(maxPage);
+			const startTime = Math.floor(DateTime.fromFormat(start, 'yyyy-MM-dd').toMillis());
 
-  return (
-    <div className="bg-gray-100 h-screen flex">
-      <Sidebar />
-      <div className="flex-1">
-        <Header title="Access Control Logs" />
-        <main className="p-4">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex flex-wrap items-center">
-              <input
-                type="text"
-                placeholder="Search logs..."
-                className="ml-2 p-1 border rounded"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by Client IP..."
-                className="ml-2 p-1 border rounded"
-                value={clientIp}
-                onChange={e => setClientIp(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by Method..."
-                className="ml-2 p-1 border rounded"
-                value={method}
-                onChange={e => setMethod(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by Status..."
-                className="ml-2 p-1 border rounded"
-                value={status}
-                onChange={e => setStatus(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by URI..."
-                className="ml-2 p-1 border rounded"
-                value={uri}
-                onChange={e => setUri(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Filter by User Agent..."
-                className="ml-2 p-1 border rounded"
-                value={userAgent}
-                onChange={e => setUserAgent(e.target.value)}
-              />
-              <input
-                type="number"
-                placeholder="Min Latency (ms)..."
-                className="ml-2 p-1 border rounded"
-                value={latencyMin}
-                onChange={e => setLatencyMin(e.target.value)}
-              />
-              <input
-                type="number"
-                placeholder="Max Latency (ms)..."
-                className="ml-2 p-1 border rounded"
-                value={latencyMax}
-                onChange={e => setLatencyMax(e.target.value)}
-              />
-            </div>
-          </div>
+			const endTime = Math.floor(
+				DateTime.fromFormat(logGroups[logGroups.length - 1][0].value, "yyyy-MM-dd HH:mm:ss.SSS").toMillis()
+			);
 
-          <div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto'>
-            <ul role="list" className="divide-y divide-gray-100">
-              {error && <p>Error loading data: {error.message}</p>}
-              {!error && isLoading ? (
-                <p>Loading...</p>
-              ) : (
-                filteredLogs.map((log, index) => (
-                  <li key={index} className="flex justify-between gap-x-6 py-5">
-                    <p className="text-sm leading-6 text-gray-900">{log.message}</p>
-                    <p className="text-sm leading-6 text-gray-500">{log.timestamp}</p>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
+			const response = await axios.get(`${apiUrl}/logs/start?service=${"points"}&start=${startTime}&end=${endTime}&query=${search}`,{ headers });
+			setQuery(response.data.queryId);
+		} catch (err) {
+			
+		}
+	}
+
+	useEffect(() => {
+		startQuery();
+	}, []);
+
+	useEffect(() => {
+		if (query) {
+			const retrieveQuery = async () => {
+				try {
+					const response = await axios.get(`${apiUrl}/logs/retrieve?queryId=${query}`,{ headers });
+					return response.data;
+				} catch (err) {
+					
+				}
+			}
+
+			const intervalId = setInterval(async () => {
+				const query = await retrieveQuery();
+				if (query.status === 'Complete') {
+					if (isNewPage) {
+						if (query.results.length == 0) {
+							setPage(page - 1);
+							setIsDone(true);
+							
+						}
+
+						setIsNewPage(false);
+						setLogGroups([...logGroups, ...query.results]);
+					} else {
+						setLogGroups(query.results);
+					}
+					console.log(query.results)
+					setLocationsFromIP(
+						query.results.map((logGroup: LogGroup[]) => JSON.parse(logGroup[1].value).SOURCE_IP)
+					);
+					
+					setLoadingLogs(false);
+					setQuery('');
+					clearInterval(intervalId);
+				}
+			}, 1000);
+
+			return () => clearInterval(intervalId);
+		}
+	}, [query]);
+
+	const setLocationsFromIP = async (ips: string[]) => {
+		const res = await axios.post<Locations>(
+			`https://api.ipapi.is/?key=${atob(atob("TnpFNFlUaG1OekF3TURGaVpHUmxaUT09"))}`,
+			{
+				ips: ips
+			}
+		)
+		
+		setLocations((prev) => ({...prev, ...res.data}));
+	}
+
+	useEffect(() => {
+		setMaxPage(Math.ceil(logGroups.length / PAGE_SIZE));
+	}, [logGroups]);
+
+
+	if (!session) {
+		return <Forbidden />;
+	}
+
+	return (
+		<div className="bg-gray-100 h-screen flex">
+			<Sidebar />
+			<div className="flex-1">
+				<Header title="Access Control Logs" />
+				<main className="p-4">
+					<EditRetentionModal 
+						open={retentionModalOpen}
+						setOpen={setRetentionModalOpen}
+						retentionInDays={retentionInDays} 
+						setRetentionInDays={setRetentionInDays} 
+					/>
+					<div className="flex justify-between items-center mb-4">
+						<div className="flex flex-wrap items-center w-full">
+							<SearchBar 
+								search={search} 
+								setSearch={setSearch}
+								start={start}
+								setStart={setStart}
+								end={end}
+								setEnd={setEnd}
+								startQuery={startQuery} 
+							/>
+						</div>
+					</div>
+					<div className='flex gap-2 items-center pb-4 text-sm font-semibold'>
+						<div>Logs are retained for { loadingRetention ? "-" : retentionInDays} days.</div>
+						<button 
+							className='bg-gray-300 rounded-md px-4 py-2 hover:bg-gray-400 transition'
+							onClick={() => setRetentionModalOpen(true)}
+						>
+							Edit
+						</button>
+					</div>
+					{ loadingLogs ? (
+						<div className='flex w-full justify-center'>
+							<div className={ `animate-spin rounded-full ${"h-10"} ${"w-10"} border-b border-black` } />
+						</div>
+					) : (
+						<div className='flex flex-col'>
+							<div className='flex flex-col gap-4'>
+								{ logGroups.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE).map((logGroup, idx) => {
+									const ip = JSON.parse(logGroup[1].value).SOURCE_IP;
+									return (
+										<div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto'>
+											<LogCard logGroup={logGroup} location={locations[ip]} key={ `log-card-${idx}` } />
+										</div>
+									)
+								}) }
+							</div>
+							<div className='flex gap-6 justify-center items-center my-20'>
+								<button 
+									className='text-white text-xs bg-blue-950 px-4 py-2 rounded-md'
+									onClick={() => setPage((prev) => Math.max(0, page - 1))}
+								>
+									Prev
+								</button>
+								{ logGroups.length > 0 && (
+									<div className='flex gap-2'>
+										{ Array(maxPage).fill(0).map((_, idx) => {
+											return (page == idx) ? (
+													<button className='text-white text-xs bg-blue-950 px-4 py-2 rounded-md'>{idx + 1}</button>
+												) : (
+													<button 
+														className='text-white text-xs bg-gray-400 px-4 py-2 rounded-md'
+														onClick={() => setPage(idx)}
+													>
+														{idx + 1}
+													</button>
+											)
+										}) }
+
+										{ logGroups.length % PAGE_SIZE == 0 && !isDone && (
+											<button 
+												className='text-white text-xs bg-gray-400 px-4 py-2 rounded-md'
+												onClick={startNewPagesQuery}
+											>
+												...
+											</button>
+										)}
+									</div>
+								)}
+								<button 
+									className='text-white text-xs bg-blue-950 px-4 py-2 rounded-md'
+									onClick={() => setPage((prev) => Math.min(maxPage - 1, prev + 1))}
+								>
+									Next
+								</button>
+							</div>
+						</div>
+					)}
+				</main>
+			</div>
+		</div>
+	);
 }
