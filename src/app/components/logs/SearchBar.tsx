@@ -12,7 +12,7 @@ interface props {
 
 const SearchBar = (props: props) => {
 	return (
-		<div className="flex w-full">
+		<div className="flex w-full items-center justify-center">
 			<div className="relative mt-2 rounded-md shadow-sm w-6/12">
 				<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5">
 					<FaSearch />
@@ -48,7 +48,7 @@ const SearchBar = (props: props) => {
 				/>
 			</div>
 			<div 
-				className="flex items-center justify-center cursor-pointer w-2/12"
+				className="flex items-center justify-center cursor-pointer w-2/12 bg-blue-950 rounded-md py-3 mt-2 text-white text-sm"
 				onClick={props.startQuery}
 			>
 				Search
