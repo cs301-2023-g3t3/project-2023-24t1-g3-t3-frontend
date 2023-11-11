@@ -24,7 +24,6 @@ const LogCard = (props: props) => {
     const log = JSON.parse(props.logGroup[1].value) as Log;
     const location = props.location;
     const service = log.URI.split("/")[1].charAt(0).toUpperCase() + log.URI.split("/")[1].slice(1);
-    const numCols = log.UPDATED_USER_DETAILS ? "grid-cols-4" : "grid-cols-3";
 
     return (
         <div className="flex flex-col">
@@ -44,6 +43,14 @@ const LogCard = (props: props) => {
                         </div>
                         <div className="col">
                             { log.SOURCE_IP }
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <div className="text-xxs text-gray-400">
+                            Actor:
+                        </div>
+                        <div className="col">
+                            { log.ACTOR }
                         </div>
                     </div>
                     <div className="flex gap-1">
@@ -105,7 +112,7 @@ const LogCard = (props: props) => {
             <div className="transition-[max-height] transition duration-500 ease-in-out overflow-y-hidden bg-gray-100 rounded-sm" style={{
                 maxHeight: open ? "300px" : "0px",
             }}>
-                <div className={ `grid ${numCols} w-full gap-2 px-8 py-4 text-xs` }>
+                <div className={ `grid grid-cols-4 w-full gap-2 px-8 py-4 text-xs` }>
                     <div className="col gap-1">
                         <div className="text-xxs text-gray-400">
                             Action
@@ -144,20 +151,6 @@ const LogCard = (props: props) => {
                             </div>
                             <div className="col text-gray-400">
                                 { roleMapping[log.USER_DETAILS.role] }
-                            </div>
-                        </div>
-                    ) }
-
-                    { log.UPDATED_USER_DETAILS && (
-                        <div className="col gap-1">
-                            <div className="text-xxs text-gray-400">
-                                Updated User Details
-                            </div>
-                            <div className="col">
-                                { log.UPDATED_USER_DETAILS.id }
-                            </div>
-                            <div className="col text-gray-400">
-                                { roleMapping[log.UPDATED_USER_DETAILS.role] }
                             </div>
                         </div>
                     ) }

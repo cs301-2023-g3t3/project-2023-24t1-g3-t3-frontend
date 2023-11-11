@@ -29,6 +29,7 @@ export interface LogGroup {
 
 export interface Log {
 	ACTION: string;
+	ACTOR: string;
 	AMOUNT?: string;
 	LATENCY: string;
 	MESSAGE: string;
