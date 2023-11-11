@@ -177,7 +177,7 @@ export default function DashboardPage() {
 					} else {
 						setLogGroups(query.results);
 					}
-					console.log(query.results)
+
 					setLocationsFromIP(
 						query.results.map((logGroup: LogGroup[]) => JSON.parse(logGroup[1].value).SOURCE_IP)
 					);
