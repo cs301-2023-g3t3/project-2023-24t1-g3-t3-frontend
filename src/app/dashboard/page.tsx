@@ -198,7 +198,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div className="p-6 bg-white rounded shadow">
               <h2 className="text-lg font-semibold text-gray-600">Users</h2>
-              {loadingUsers ? <p className="mt-2 text-gray-500">Loading...</p> : <p className="mt-2 text-gray-500">
+              {loadingUsers ? 
+                  <div className='flex w-full justify-center'>
+                    <div className={ `animate-spin rounded-full ${"h-10"} ${"w-10"} border-b border-black` } />
+                  </div> : 
+                <p className="mt-2 text-gray-500">
                 Total users: {totalUsers}
                 <br />
                 Owners: {numberOfOwners}
@@ -216,7 +220,10 @@ export default function DashboardPage() {
             </div>
             <div className="p-6 bg-white rounded shadow">
               <h2 className="text-lg font-semibold text-gray-600">Points</h2>
-              {loadingUsers ? <p className="mt-2 text-gray-500">Loading...</p> : <p className="mt-2 text-gray-500">
+              {loadingUsers ? 
+                <div className='flex w-full justify-center'>
+                  <div className={ `animate-spin rounded-full ${"h-10"} ${"w-10"} border-b border-black` } />
+                </div> : <p className="mt-2 text-gray-500">
                 Max points: {maxPoints}
                 <br />
                 Average points: {averagePoints}
@@ -265,7 +272,9 @@ export default function DashboardPage() {
           {/* Users */} 
           <div className='bg-white rounded shadow p-4 max-h-[375px] overflow-y-auto'>
             <ul role="list" className="divide-y divide-gray-100">
-              {loadingUsers && <p>Fetching users...</p>}
+              {loadingUsers && <div className='flex w-full justify-center'>
+                                  <div className={ `animate-spin rounded-full ${"h-10"} ${"w-10"} border-b border-black` } />
+                                </div>}
               {userSearchOutput.map((user) => (
                 <li key={user.email} className="flex justify-between gap-x-6 py-5 ">
                   <div className="flex min-w-0 gap-x-4">
