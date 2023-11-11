@@ -40,10 +40,10 @@ const EditRetentionModal = (props: props) => {
     const handleCancel = () => {
         props.setOpen(false);
     };
-
+    
     const updateRetention = async () => {
         try {
-            const res = await axios.put(`${apiUrl}/logs/retention?days=${retention}`, { headers });
+            const res = await axios.put(`${apiUrl}/logs/retention?days=${retention}`, {}, { headers });
             props.setRetentionInDays(retention);
 
             notification.success({

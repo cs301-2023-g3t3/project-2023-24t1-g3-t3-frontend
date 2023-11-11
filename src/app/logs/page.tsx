@@ -273,10 +273,11 @@ export default function DashboardPage() {
 									<div className='flex gap-2'>
 										{ Array(maxPage).fill(0).map((_, idx) => {
 											return (page == idx) ? (
-													<button className='text-white text-xs bg-blue-950 px-4 py-2 rounded-md'>{idx + 1}</button>
+													<button className='text-white text-xs bg-blue-950 px-4 py-2 rounded-md' key={ `page-button-${idx}` }>{idx + 1}</button>
 												) : (
 													<button 
 														className='text-white text-xs bg-gray-400 px-4 py-2 rounded-md'
+														key={ `page-button-${idx}` }
 														onClick={() => setPage(idx)}
 													>
 														{idx + 1}
