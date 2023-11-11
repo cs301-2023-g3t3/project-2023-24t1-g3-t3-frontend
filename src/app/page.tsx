@@ -1,7 +1,7 @@
 "use client"
 
 import Login from './components/Login'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation';
 
@@ -9,9 +9,11 @@ export default function Home() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  if (session) {
-    router.push('/dashboard'); 
-  }
+  useEffect(() => {
+    if (session) {
+      router.push('/dashboard');
+    }
+  }, [session, router]);
 
   return (
     <main className='flex'>

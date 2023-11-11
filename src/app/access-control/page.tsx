@@ -11,6 +11,7 @@ import { useSession } from 'next-auth/react';
 import Forbidden from '../components/Forbidden';
 import Header from '../components/Header';
 import { useRouter } from 'next/navigation';
+import { access } from 'fs';
 
 interface CustomSession {
   user: {
@@ -59,6 +60,9 @@ export default function AccessControl() {
 
   const [originalRolePermissions, setOriginalRolePermissions] = useState<RolePermissions>({});
   const [rolePermissions, setRolePermissions] = useState<RolePermissions>({});
+  const [accessPoints, setAccessPoints] = useState<AccessPoint[]>([]);
+
+  const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -75,7 +79,8 @@ export default function AccessControl() {
       const roleToAccessPointMapping = responses[1].data;
       // console.log(roleToAccessPointMapping);
       const accessPoints = responses[2].data;
-      // console.log(roleToAccessPointMapping);
+      setAccessPoints(accessPoints);
+      
       // Step 1: Map Access Point IDs to Permission Names
       const accessPointToPermission: {[key: number]: string} = {};
       accessPoints.forEach((ap: AccessPoint) => {
@@ -124,9 +129,9 @@ export default function AccessControl() {
   
   const [changes, setChanges] = useState<RolePermissions>({});
 
-  useEffect(() => {
-    console.log('Updated changes:', changes);
-  }, [changes]);
+  // useEffect(() => {
+  //   console.log('Updated changes:', changes);
+  // }, [changes]);
 
   const handleCheckboxChange = (role: string, permission: string, isChecked: boolean) => {
     // Copy the current changes
@@ -164,21 +169,52 @@ export default function AccessControl() {
   const handleSaveChanges = () => {
     // Send changes to the server
     console.log('Sending changes to the server:', changes);
+    try {
+      Object.keys(changes).forEach((role: string) => {
+        console.log("For role:", role);
+        const roleId = roles.find((r: Role) => r.name === role)?.id;
+        if (roleId) {
+          const permissionNames = Object.keys(changes[role]);
+          // get id from permission name
+          permissionNames.forEach((permissionName: string) => {
+            console.log("For permission:", permissionName);
+            const apId = accessPoints.find((ap: AccessPoint) => ap.name === permissionName)?.id;
+            console.log("apId:", apId);
 
-    // format the changes to match the API
-    // e.g. {roleId: 1, apId: 4}
-
-    const formattedChanges: RoleMapping[] = [];
-
-    Object.keys(changes).forEach((role: string) => {
-      const roleId = roles.find((r: Role) => r.name === role)?.id;
-      if (roleId) {
+            if (changes[role][permissionName]) {
+              console.log("Call create endpoint");
+              axios.post(apiUrl + '/users/role-access', { roleId, apId }, { headers })
+              .then((response) => {
+                console.log(response)
+                })
+                .catch((error) => {
+                  console.log(error);
+                }
+              );
+            } else {
+              console.log("Call delete endpoint");
+              axios.delete(apiUrl + '/users/role-access', { data: { roleId, apId }, headers })
+              .then((response) => {
+                console.log(response)
+                })
+                .catch((error) => {
+                  console.log(error);
+                }
+              );
+            }
+            // window.location.reload();
+          });
+        }
         
-      }
-      
-    });
+      });
 
-    console.log(formattedChanges);
+      setSavedSuccess(true);
+
+    } catch (error) {
+      console.log(error);
+    } finally {
+      // window.location.reload();
+    }
     // axios.post(apiUrl + '/users/role-access', changes, { headers });
 
 
@@ -287,13 +323,24 @@ export default function AccessControl() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  className="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   onClick={(e) => {handleSaveChanges()}}
                 >
                   Save Changes
                 </button>
                 
               </div>
+
+              {savedSuccess && (
+                  <div className="flex w-full mt-6 flex items-center justify-end gap-x-6">
+                      <p className="text-green-600 font-semibold">Changes saved successfully!</p>
+                      <svg className="h-6 w-6 text-green-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                          <path d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      
+                  </div>
+              )}
+
             </div>
 
             

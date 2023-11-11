@@ -102,36 +102,39 @@ export default function DashboardPage() {
       };
 
       Promise.all([
-        axios.get(`${apiUrl}/users/accounts`, { headers }),
-        axios.get(`${apiUrl}/points/accounts`, { headers })
+        axios.get(`${apiUrl}/users/accounts/paginate?page=1&size=10`, { headers }),
+        axios.get(`${apiUrl}/points/accounts/paginate?page=1&size=10`, { headers })
       ])
       .then(([usersResponse, pointsResponse]) => {
+        console.log(usersResponse);
+        console.log(pointsResponse);
         // Handle users
-        const mappedUsers = usersResponse.data.map((user: { role: number | null; }) => ({
-          ...user,
-          role: roleMap[user.role !== null ? user.role : 0],
-          pointsBalance: 0
 
-        }));
+        // const mappedUsers = users.map((user: { role: number | null; }) => ({
+        //   ...user,
+        //   role: roleMap[user.role !== null ? user.role : 0],
+        //   pointsBalance: 0
+
+        // }));
   
         // Handle points
-        const mappedPoints = pointsResponse.data;
-        const newPeople = mappedUsers.map((person: { id: number; pointsBalance: any; }) => {
+        // const mappedPoints = pointsResponse.data;
+        // const newPeople = mappedUsers.map((person: { id: number; pointsBalance: any; }) => {
 
 
-          const pointsUser = mappedPoints.find((user: { userId: number; }) => user.userId === person.id);
-          if (!pointsUser) {
-            return person;
-          }
+        //   const pointsUser = mappedPoints.find((user: { userId: number; }) => user.userId === person.id);
+        //   if (!pointsUser) {
+        //     return person;
+        //   }
           
-          person.pointsBalance = pointsUser.balance;
-          return person;
-        });
+        //   person.pointsBalance = pointsUser.balance;
+        //   return person;
+        // });
   
         // Update state
-        setPeople(newPeople);
-        setUserSearchOutput(newPeople);
-        setLoadingUsers(false);
+        // setPeople(newPeople);
+        // setUserSearchOutput(newPeople);
+        // setLoadingUsers(false);
       })
       .catch(error => {
         console.error(error);
@@ -222,10 +225,6 @@ export default function DashboardPage() {
                 </p>}
               {error && <p className="mt-2 text-gray-500">Error: {error}</p>}
             </div>
-            {/* <div className="p-6 bg-white rounded shadow">
-              <h2 className="text-lg font-semibold text-gray-600">Logs</h2>
-              <p className="mt-2 text-gray-500">Total logs: {totalLogs}</p>
-            </div> */}
           </div>
           
           <div className="flex justify-between items-center mb-4">
