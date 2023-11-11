@@ -177,7 +177,7 @@ export default function DashboardPage() {
 					} else {
 						setLogGroups(query.results);
 					}
-					console.log(query.results)
+
 					setLocationsFromIP(
 						query.results.map((logGroup: LogGroup[]) => JSON.parse(logGroup[1].value).SOURCE_IP)
 					);
@@ -256,8 +256,8 @@ export default function DashboardPage() {
 								{ logGroups.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE).map((logGroup, idx) => {
 									const ip = JSON.parse(logGroup[1].value).SOURCE_IP;
 									return (
-										<div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto'>
-											<LogCard logGroup={logGroup} location={locations[ip]} key={ `log-card-${idx}` } />
+										<div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto' key={ `log-card-${idx}` }>
+											<LogCard logGroup={logGroup} location={locations[ip]} />
 										</div>
 									)
 								}) }
@@ -273,10 +273,11 @@ export default function DashboardPage() {
 									<div className='flex gap-2'>
 										{ Array(maxPage).fill(0).map((_, idx) => {
 											return (page == idx) ? (
-													<button className='text-white text-xs bg-blue-950 px-4 py-2 rounded-md'>{idx + 1}</button>
+													<button className='text-white text-xs bg-blue-950 px-4 py-2 rounded-md' key={ `page-button-${idx}` }>{idx + 1}</button>
 												) : (
 													<button 
 														className='text-white text-xs bg-gray-400 px-4 py-2 rounded-md'
+														key={ `page-button-${idx}` }
 														onClick={() => setPage(idx)}
 													>
 														{idx + 1}
