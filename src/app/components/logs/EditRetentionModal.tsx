@@ -52,11 +52,18 @@ const EditRetentionModal = (props: props) => {
             })
 
             props.setOpen(false);
-        } catch (e) {
-            notification.error({
-                message: "Error",
-                description: "An error occurred while updating the retention period. Please try again later."
-            });
+        } catch (e: any) {
+            if (e.response.status === 403) {
+                notification.error({
+                    message: "Error",
+                    description: "You do not have permission to update the retention period."
+                });
+            } else {
+                notification.error({
+                    message: "Error",
+                    description: "An error occurred while updating the retention period. Please try again later."
+                });
+            }
         }
     }
 
@@ -78,14 +85,36 @@ const EditRetentionModal = (props: props) => {
                                 >
                                     Edit Log Retention in Days
                                 </label>
-                                <input
-                                    type="number"
+                                <select
                                     className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
                                     value={retention}
                                     onChange={(e) => {
                                         setRetention(parseInt(e.target.value))
                                     }}
-                                />
+                                >
+                                    <option value="1">1 day</option>
+                                    <option value="3">3 days</option>
+                                    <option value="5">5 days</option>
+                                    <option value="7">7 days</option>
+                                    <option value="14">14 days</option>
+                                    <option value="30">30 days</option>
+                                    <option value="60">60 days</option>
+                                    <option value="90">90 days</option>
+                                    <option value="120">120 days</option>
+                                    <option value="150">150 days</option>
+                                    <option value="180">180 days</option>
+                                    <option value="365">365 days</option>
+                                    <option value="400">400 days</option>
+                                    <option value="545">545 days</option>
+                                    <option value="731">731 days</option>
+                                    <option value="1096">1096 days</option>
+                                    <option value="1827">1827 days</option>
+                                    <option value="2192">2192 days</option>
+                                    <option value="2557">2557 days</option>
+                                    <option value="2922">2922 days</option>
+                                    <option value="3288">3288 days</option>
+                                    <option value="3653">3653 days</option>
+                                </select>
                             </div>
                         </form>
                     </div>
