@@ -1,7 +1,7 @@
 "use client"
 
 import { FaUserPlus } from 'react-icons/fa';
-import { FiSearch } from 'react-icons/fi';
+import { FiFolderPlus, FiSearch, FiTrash } from 'react-icons/fi';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -129,9 +129,12 @@ export default function AccessControl() {
   
   const [changes, setChanges] = useState<RolePermissions>({});
 
-  // useEffect(() => {
-  //   console.log('Updated changes:', changes);
-  // }, [changes]);
+  const [createAccessPointModal, setCreateAccessPointModal] = useState<boolean>(false);
+  const [deleteAccessPointModal, setDeleteAccessPointModal] = useState<boolean>(false);
+
+  const [toDeleteAccessPoint, setToDeleteAccessPoint] = useState<number>(0);
+
+  const [newAccessPoint, setNewAccessPoint] = useState<AccessPoint>({} as AccessPoint);
 
   const handleCheckboxChange = (role: string, permission: string, isChecked: boolean) => {
     // Copy the current changes
@@ -221,6 +224,10 @@ export default function AccessControl() {
 
   }
   
+  const handleDeleteAccessPoint = () => {
+
+  }
+
   
   if (!session) {
     return (
@@ -263,6 +270,7 @@ export default function AccessControl() {
                 <div className="flex pl-4 flex-grow flex-col">
                   <div className="flex justify-between mb-4">
                     <h1 className="text-2xl font-semibold text-gray-900">{selectedRole}</h1>
+                    <div className="flex items-center gap-4">
                     <input
                       type="text"
                       placeholder="Search permission..."
@@ -270,6 +278,14 @@ export default function AccessControl() {
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
                     />
+                    <button 
+                      className="flex gap-2 text-gray-700 hover:text-gray-800"
+                      onClick={() => setCreateAccessPointModal(true)}
+                    >
+                      <FiFolderPlus className="text-2xl text-gray-900 cursor-pointer hover:text-gray-800" />
+                    </button>
+                    </div>
+                    
                   </div>
                   <div className="overflow-auto max-h-96"> 
                       <table className="min-w-full table-auto">
@@ -290,12 +306,21 @@ export default function AccessControl() {
                                   .map(([permission, isChecked]) => (
                                     <tr key={selectedRole + permission}>
                                       <td className="px-4 py-2">{permission}</td>
-                                      <td className="px-4 py-2">
+                                      <td className="flex px-4 py-2 items-center justify-between">
                                         <input 
                                           type="checkbox" 
                                           checked={isChecked} 
                                           onChange={(e) => handleCheckboxChange(selectedRole, permission, e.target.checked)}
                                         />
+                                        <button 
+                                          onClick={() => {
+                                            const id = accessPoints.find((ap: AccessPoint) => ap.name === permission)?.id;
+                                            setToDeleteAccessPoint(id as number);
+                                            setDeleteAccessPointModal(true);
+                                          }}
+                                        >
+                                          <FiTrash className="text-red-500 text-xl cursor-pointer hover:text-red-600" />
+                                        </button>
                                       </td>
                                     </tr>
                                   ))
@@ -339,6 +364,138 @@ export default function AccessControl() {
                       </svg>
                       
                   </div>
+              )}
+
+              {createAccessPointModal && (
+                <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                  <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                      <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                      <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                      <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                              <div className="sm:flex sm:items-start">
+                                  <div className="w-full mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                      <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                      Create Access Point
+                                      </h3>
+
+                                      <div className="mt-2">
+                                          <input 
+                                              type="text" 
+                                              name="accesspoint" 
+                                              id="accesspoint" 
+                                              className="pl-2 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-500 rounded-md h-8" 
+                                              placeholder="Name of Action"
+                                              onChange={(e) => {
+                                                newAccessPoint.name = e.target.value;
+                                              }}
+                                          />
+                                      </div>
+
+                                      <div className="mt-2">
+                                          <input 
+                                              type="text" 
+                                              name="accesspoint" 
+                                              id="accesspoint" 
+                                              className="pl-2 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-500 rounded-md h-8" 
+                                              placeholder="Access point (e.g. /*/PUT/points/accounts/*)"
+                                              onChange={(e) => {
+                                                  newAccessPoint.endpoint = e.target.value;
+                                              }}
+                                          />
+                                      </div>
+                                      
+                                  </div>
+                              </div>
+                          </div>
+                          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                              <button 
+                                  type="button" 
+                                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                  onClick={() => {
+                                      axios.post(apiUrl + '/users/access-points', 
+                                      {
+                                          name: newAccessPoint.name,
+                                          endpoint: newAccessPoint.endpoint
+                                      }, { headers }).then((response) => {
+                                          console.log(response);
+                                          window.location.reload();
+                                      }).catch((error) => {
+                                          console.log(error);
+                                      }
+                                      );
+                                  }}
+                              >
+                                  Create
+                              </button>
+                          
+                              <button 
+                                  onClick={() => {
+                                      setCreateAccessPointModal(false);
+                                  }}
+                                  type="button" 
+                                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                              >
+                                  Cancel
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              )}
+
+              {deleteAccessPointModal && (
+                <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                  <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                      <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                      <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                      <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                              <div className="sm:flex sm:items-start">
+                                  <div className="w-full mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                      <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                      Delete Access Point
+                                      </h3>
+
+                                      <div className="mt-2">
+                                          <p className="text-sm text-gray-500">Are you sure you want to delete this access point?</p>
+                                      </div>
+                                      
+                                  </div>
+                              </div>
+                          </div>
+                          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                              <button 
+                                  type="button" 
+                                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                  onClick={() => {
+                                      axios.delete(apiUrl + `/users/access-points/${toDeleteAccessPoint}`, { headers })
+                                      .then((response) => {
+                                          console.log(response);
+                                          window.location.reload();
+                                      }).catch((error) => {
+                                          console.log(error);
+                                      });
+                                  }}
+                              >
+                                  Delete
+                              </button>
+
+                              <button 
+                                  onClick={() => {
+                                      setDeleteAccessPointModal(false);
+                                  }}
+                                  type="button" 
+                                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                              >
+                                  Cancel
+                              </button>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+
               )}
 
             </div>

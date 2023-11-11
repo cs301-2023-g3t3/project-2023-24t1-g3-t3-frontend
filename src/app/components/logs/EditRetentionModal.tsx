@@ -28,7 +28,9 @@ const EditRetentionModal = (props: props) => {
 	const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 	const headers = useMemo(() => {
-		return { 'Authorization': `Bearer ${customSession.accessToken}` };
+		return { 
+            'Authorization': `Bearer ${customSession.accessToken}`
+     };
 	}, [customSession.accessToken]);
 
     const [retention, setRetention] = useState(props.retentionInDays);
