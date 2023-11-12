@@ -38,11 +38,11 @@ export const config = {
                     scope: 'aws.cognito.signin.user.admin openid profile email',
                 },
             },
+            checks: "nonce"
           })
     ],
     callbacks: {
         async jwt({token, user, account, profile}) {
-          console.log('jwt', token, user, account, profile)
           const customProfile = profile as CustomProfile;
           const customAccount = account as CustomAccount;
           

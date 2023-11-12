@@ -29,6 +29,7 @@ export interface LogGroup {
 
 export interface Log {
 	ACTION: string;
+	ACTOR: string;
 	AMOUNT?: string;
 	LATENCY: string;
 	MESSAGE: string;
@@ -88,7 +89,7 @@ export default function DashboardPage() {
 	const [query, setQuery] = useState('');
 	const [search, setSearch] = useState('');
 	const [start, setStart] = useState(DateTime.now().minus({ days: 7 }).toFormat('yyyy-MM-dd') as string);
-	const [end, setEnd] = useState(DateTime.now().toFormat('yyyy-MM-dd') as string);
+	const [end, setEnd] = useState(DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd') as string);
 	const [locations, setLocations] = useState<Locations>({});
 	const [page, setPage] = useState(0);
 	const [isNewPage, setIsNewPage] = useState(false);
