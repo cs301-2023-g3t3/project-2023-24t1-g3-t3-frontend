@@ -14,14 +14,7 @@ interface Request {
     status: string;
 }
 
-interface CustomSession {
-    session: {
-        accessToken: string;
-        id_token: string;
-    }
-}
-
-export default function ApproveRequests({ session }: CustomSession) {
+export default function ApproveRequests({ session }: any) {
     const header = {
         headers: {
             Authorization: `Bearer ${session.accessToken}`,
