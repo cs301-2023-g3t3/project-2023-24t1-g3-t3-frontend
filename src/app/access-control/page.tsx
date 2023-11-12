@@ -229,11 +229,6 @@ export default function AccessControl() {
 
   }
   
-  const handleDeleteAccessPoint = () => {
-
-  }
-
-  
   if (!session) {
     return (
       <Forbidden />
