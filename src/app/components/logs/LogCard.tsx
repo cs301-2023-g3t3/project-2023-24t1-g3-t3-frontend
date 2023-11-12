@@ -82,7 +82,7 @@ const LogCard = (props: props) => {
                                     { service }
                                 </div>
                                 <div className="text-gray-400">
-                                    ({ log.URI })
+                                    {log.METHOD} { log.URI }
                                 </div>
                             </div>
                         </div>
