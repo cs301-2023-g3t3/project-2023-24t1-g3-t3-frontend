@@ -9,6 +9,8 @@ import { FaCaretDown } from "react-icons/fa";
 interface props {
     logGroup: LogGroup[]
     location: Location
+    setSearch: (search: string) => void
+    startQuery: (search: string) => void
 }
 
 const roleMapping: { [ key: string ]: string } = {
@@ -49,7 +51,13 @@ const LogCard = (props: props) => {
                         <div className="text-xxs text-gray-400">
                             Actor:
                         </div>
-                        <div className="col">
+                        <div 
+                            className="col cursor-pointer hover:underline"
+                            onClick={async () => {
+                                props.setSearch(log.ACTOR);
+                                props.startQuery(log.ACTOR);
+                            }}
+                        >
                             { log.ACTOR }
                         </div>
                     </div>
