@@ -29,6 +29,11 @@ interface PointsAccount {
     balance: number;
 }
 
+interface props {
+    user: User;
+    setCurrentEditUser: (user: User) => void;
+}
+
 const Spinner = () => {
     return (
         <div className='flex w-full justify-center'>
@@ -38,7 +43,7 @@ const Spinner = () => {
 }
 
 
-export default function UserRow(user : User) {
+export default function UserRow({ user, setCurrentEditUser }: props) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const { data: session } = useSession();
     const customSession = ((session as unknown) as CustomSession);
@@ -80,7 +85,12 @@ export default function UserRow(user : User) {
                 </div>
                 </div>
                 <div className="flex flex-col shrink-0 sm:flex sm:flex-col sm:items-end">
-                <Link className="mr-4 text-gray-500" href={`/dashboard/${user.id}`}>Edit</Link>
+                <div 
+                    className="mr-4 text-gray-500 hover:underline cursor-pointer"
+                    onClick={() => setCurrentEditUser(user)}
+                >
+                    Edit
+                </div>
                 
                 {!showPointsAccounts && (
                     <button className='mr-4 mt-4 text-gray-500' onClick={

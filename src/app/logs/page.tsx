@@ -214,9 +214,9 @@ export default function DashboardPage() {
 	}
 
 	return (
-		<div className="bg-gray-100 h-screen flex">
+		<div className="flex">
 			<Sidebar />
-			<div className="flex-1">
+			<div className="relative bg-gray-100 h-screen w-full overflow-y-scroll">
 				<Header title="Access Control Logs" />
 				<main className="p-4">
 					<EditRetentionModal 
@@ -257,7 +257,7 @@ export default function DashboardPage() {
 								{ logGroups.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE).map((logGroup, idx) => {
 									const ip = JSON.parse(logGroup[1].value).SOURCE_IP;
 									return (
-										<div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto' key={ `log-card-${idx}` }>
+										<div className='bg-white rounded shadow p-4 max-h-[500px]' key={ `log-card-${idx}` }>
 											<LogCard 
 												logGroup={logGroup} 
 												location={locations[ip]} 

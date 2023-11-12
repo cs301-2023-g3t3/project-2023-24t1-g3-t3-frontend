@@ -66,10 +66,7 @@ export default function MakerChecker() {
     };
 
     const [searchTerm, setSearchTerm] = useState('');
-
     const [accessPoints, setAccessPoints] = useState<AccessPoint[]>([]);
-    
-
     const [roles, setRoles] = useState<Role[]>([]);
 
 
@@ -79,7 +76,7 @@ export default function MakerChecker() {
             axios.get(`${apiUrl}/users/roles`, { headers }),
             axios.get(`${apiUrl}/users/access-points`, { headers })
 
-            ]).then((responses) => {
+        ]).then((responses) => {
             const permissions = responses[0].data;
             setPermissions(permissions);
             setFilteredPermissions(permissions);
@@ -91,9 +88,9 @@ export default function MakerChecker() {
             const accessPoints = responses[2].data;
             setAccessPoints(accessPoints);
 
-            }).catch((error) => {
+        }).catch((error) => {
             console.log(error);
-            });
+        });
 
     }, []);
     
