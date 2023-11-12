@@ -38,6 +38,7 @@ export const config = {
                     scope: 'aws.cognito.signin.user.admin openid profile email',
                 },
             },
+            checks: "nonce"
           })
     ],
     callbacks: {
