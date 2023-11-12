@@ -138,7 +138,7 @@ export default function DashboardPage() {
 			const startTime = Math.floor(DateTime.fromFormat(start, 'yyyy-MM-dd').toMillis());
 
 			const endTime = Math.floor(
-				DateTime.fromFormat(logGroups[logGroups.length - 1][0].value, "yyyy-MM-dd HH:mm:ss.SSS").toMillis()
+				DateTime.fromFormat(logGroups[logGroups.length - 1][0].value, "yyyy-MM-dd HH:mm:ss.SSS", { zone: 'utc' }).toMillis()
 			);
 
 			const response = await axios.get(`${apiUrl}/logs/start?service=${"points"}&start=${startTime}&end=${endTime}&query=${search}`,{ headers });
@@ -170,7 +170,6 @@ export default function DashboardPage() {
 						if (query.results.length == 0) {
 							setPage(page - 1);
 							setIsDone(true);
-							
 						}
 
 						setIsNewPage(false);
@@ -205,6 +204,7 @@ export default function DashboardPage() {
 	}
 
 	useEffect(() => {
+		console.log(logGroups.length)
 		setMaxPage(Math.ceil(logGroups.length / PAGE_SIZE));
 	}, [logGroups]);
 
