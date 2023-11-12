@@ -86,8 +86,10 @@ export default function EditAccount({ user }: props) {
 	const [lastName, setLastName] = useState(user.lastName);
 	const [email, setEmail] = useState(user.email);
 	const [role, setRole] = useState(roles.findIndex((role) => role.name === user.role));
+	const [type, setType] = useState("");
 
 	const [confirmModal, setConfirmModal] = useState(false);
+	const [confirmDeleteModal, setConfirmDeleteModal] = useState(false);
 	const [requestPermissionModal, setRequestPermissionModal] = useState(false);
 	const [loading, setLoading] = useState(false);
 	
@@ -98,8 +100,6 @@ export default function EditAccount({ user }: props) {
 	const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 	const handleEditAccount = async () => {
-		// Create account
-		
 		setConfirmModal(false);
 		setLoading(true);
 		
@@ -110,7 +110,7 @@ export default function EditAccount({ user }: props) {
 			...(role !== 0 && { role: role })
 		};
 		console.log(account);
-		axios.put(apiUrl + '/users/accounts', account, { headers })
+		axios.put(`${apiUrl}/users/accounts/${user.id}`, account, { headers })
 		.then((res) => {
 			console.log(res);
 			setLoading(false);
@@ -121,29 +121,57 @@ export default function EditAccount({ user }: props) {
 		}).catch((err) => {
 			console.log(err);
 			setLoading(false);
-			verifyIfCanMakerChecker();
+			verifyIfCanMakerCheckerEdit();
 			// setRequestPermissionModal(true);
 		});
+	}
 
+	const handleDeleteAccount = async () => {
+		setConfirmDeleteModal(false);
+		setLoading(true);
 		
+		axios.delete(`${apiUrl}/users/accounts/${user.id}`, { headers })
+		.then((res) => {
+			console.log(res);
+			setLoading(false);
+			setConfirmDeleteModal(false);
+			window.location.reload();
+
+			
+		}).catch((err) => {
+			console.log(err);
+			setLoading(false);
+			verifyIfCanMakerCheckerDelete();
+			// setRequestPermissionModal(true);
+		});
 	}
 
 	const createMakerCheckerRecord = async () => {
 		setLoading(true);
-		const endpoint = '/*/PUT/users/accounts';
-		const data = {
-			firstName,
-			lastName,
-			email,
-			...(role !== 0 && { role: role })
-		};
-		const request = {
-			checkerId,
-			endpoint,
-			data,
-		};
 
-		axios.post(apiUrl + '/makerchecker/record', request, { headers })
+		const endpoint = type == "edit" ? `/*/PUT/users/accounts/${user.id}` : `/*/DELETE/users/accounts/${user.id}`;
+
+		let request;
+		if (type == "edit") {
+			const data = {
+				firstName,
+				lastName,
+				email,
+				...(role !== 0 && { role: role })
+			};
+			request = {
+				checkerId,
+				endpoint,
+				data
+			};
+		} else {
+			request = {
+				checkerId,
+				endpoint,
+			};
+		}
+
+		axios.post(`${apiUrl}/makerchecker/record`, request, { headers })
 		.then((res) => {
 			console.log(res);
 			setRequestPermissionModal(false);
@@ -157,16 +185,15 @@ export default function EditAccount({ user }: props) {
 		});
 	}
 
-
-	const verifyIfCanMakerChecker = async () => {
+	const verifyIfCanMakerCheckerEdit = async () => {
 		setLoading(true);
-		const endpoint = '/*/PUT/users/accounts';
+		const endpoint = `/*/PUT/users/accounts/${user.id}`;
 
 		const request = {
 			endpoint,
 		};
 
-		axios.post(apiUrl + '/makerchecker/verify', request, { headers })
+		axios.post(`${apiUrl}/makerchecker/verify`, request, { headers })
 		.then((res) => {
 			console.log(res);
 			setCheckers(res.data);
@@ -179,6 +206,33 @@ export default function EditAccount({ user }: props) {
 				notification.error({
 					message: 'Error',
 					description: 'Not allowed to edit account.',
+				});
+				setLoading(false);
+			}
+		});
+	}
+
+	const verifyIfCanMakerCheckerDelete = async () => {
+		setLoading(true);
+		const endpoint = `/*/DELETE/users/accounts/${user.id}`;
+
+		const request = {
+			endpoint,
+		};
+
+		axios.post(`${apiUrl}/makerchecker/verify`, request, { headers })
+		.then((res) => {
+			console.log(res);
+			setCheckers(res.data);
+			setRequestPermissionModal(false);
+			setMakerChecker(true);
+			setLoading(false);
+		}).catch((err) => {
+			console.log(err);
+			if (err.response.status === 404) {
+				notification.error({
+					message: 'Error',
+					description: 'Not allowed to delete account.',
 				});
 				setLoading(false);
 			}
@@ -207,18 +261,26 @@ export default function EditAccount({ user }: props) {
 					<Confirm
 						title="Insufficient Permission"
 						message="You do not have the sufficient permissions to create the account. Would you like to request for approval?"
-						onConfirm={() => verifyIfCanMakerChecker()}
+						onConfirm={() => verifyIfCanMakerCheckerEdit()}
 						onCancel={() => setRequestPermissionModal(false)}
 					/>
 				)}
 
 				{confirmModal && (
-					
 					<Confirm
-						title="Confirm Account Creation"
-						message="Are you sure you want to create this account?"
+						title="Confirm Account Edit"
+						message="Are you sure you want to edit this account?"
 						onConfirm={() => {handleEditAccount()}}
 						onCancel={() => setConfirmModal(false)}
+					/>
+				)}
+
+				{confirmDeleteModal && (
+					<Confirm
+						title="Confirm Account Deletion"
+						message="Are you sure you want to delete this account?"
+						onConfirm={() => {handleDeleteAccount()}}
+						onCancel={() => setConfirmDeleteModal(false)}
 					/>
 				)}
 
@@ -306,20 +368,30 @@ export default function EditAccount({ user }: props) {
 								))}
 							</select>
 						</div>
-							<button
-								className="bg-blue-500 text-white p-2 rounded"
-								onClick={(e) => {
-									e.preventDefault();
-									setConfirmModal(true);
-								}}
-							>
-								Edit Account
-							</button>
-
-						</form>
-
-						
+					</form>
 				</main>
+				<div className='flex w-full justify-between'>
+					<button
+							className="bg-red-500 text-white p-2 rounded"
+						onClick={(e) => {
+							e.preventDefault();
+							setType("delete");
+							setConfirmDeleteModal(true);
+						}}
+					>
+						Delete Account
+					</button>
+					<button
+						className="bg-blue-500 text-white p-2 rounded"
+						onClick={(e) => {
+							e.preventDefault();
+							setType("edit");
+							setConfirmModal(true);
+						}}
+					>
+						Edit Account
+					</button>
+				</div>
 			</div>
 
 			
