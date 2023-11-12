@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
+import notification from "antd/es/notification";
 
 interface Request {
-    id: number;
+    _id: string;
     checkerEmail: string;
     checkerId: string;
     data: JSON;
@@ -24,6 +25,45 @@ export default function MyRequests({ session }: any) {
     useEffect(() => {
         fetchRequests();
     }, []);
+
+    const header = {
+        headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            'X-IDTOKEN': `${session.id_token}`,
+        },
+    };
+
+    const updateRequest = async (id : string, status: string) => {
+        const body = {
+            "id": id,
+            "status": status,
+        }
+
+        axios.put(`${apiUrl}/makerchecker/record`, body, header)
+        .then((response) => {
+            console.log(response.data);
+            fetchRequests();
+
+            if (status === 'approved'){
+                notification.success({
+                    message: 'Request Approved',
+                    description: 'Request has been approved successfully',
+                });
+            } else if (status === 'cancelled'){
+                notification.success({
+                    message: 'Request Denied',
+                    description: 'Request has been denied successfully',
+                });
+            }
+            
+        }).catch((error) => {
+            console.log(error);
+            notification.error({
+                message: 'Request Update Failed',
+                description: 'Failed to update request',
+            });
+        });
+    };
 
     const fetchRequests = async () => {
         // Fetch requests from backend/API here
@@ -65,12 +105,18 @@ export default function MyRequests({ session }: any) {
             </thead>
             <tbody>
                 {requests.map((request: Request) => (
-                <tr key={request.id} className="hover:bg-gray-100 transition duration-150 ease-in-out">
+                <tr key={request._id} className="hover:bg-gray-100 transition duration-150 ease-in-out">
                     <td className="text-gray-500 border px-4 py-3">{request.makerEmail}</td>
                     <td className="text-gray-500 border px-4 py-3">{request.endpoint}</td>
                     <td className={`border px-4 py-3 ${request.status === 'Pending' ? 'text-yellow-500' : 'text-green-500'}`}>{request.status}</td>
                     <td className="border px-4 py-3">
-                    {request.status === 'pending' && <button className="w-full bg-red-500 text-white px-3 py-1 rounded shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">Cancel</button>}
+                    {request.status === 'pending' && 
+                        <button 
+                            onClick={() => updateRequest(request._id, 'cancelled')}
+                            className="w-full bg-red-500 text-white px-3 py-1 rounded shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                        >
+                            Cancel
+                        </button>}
                     </td>
                 </tr>
                 ))}
