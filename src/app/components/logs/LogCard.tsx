@@ -112,7 +112,7 @@ const LogCard = (props: props) => {
             <div className="transition-[max-height] transition duration-500 ease-in-out overflow-y-hidden bg-gray-100 rounded-sm" style={{
                 maxHeight: open ? "300px" : "0px",
             }}>
-                <div className={ `grid grid-cols-4 w-full gap-2 px-8 py-4 text-xs` }>
+                <div className={ `grid grid-cols-5 w-full gap-2 px-8 py-4 text-xs` }>
                     <div className="col gap-1">
                         <div className="text-xxs text-gray-400">
                             Action

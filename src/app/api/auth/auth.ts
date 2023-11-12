@@ -43,7 +43,6 @@ export const config = {
     ],
     callbacks: {
         async jwt({token, user, account, profile}) {
-          console.log('jwt', token, user, account, profile)
           const customProfile = profile as CustomProfile;
           const customAccount = account as CustomAccount;
           
