@@ -34,7 +34,7 @@ export default function MyRequests({ session }: any) {
             },
         }).then((response) => {
             console.log(response.data);
-            // setRequests(response.data);
+            setRequests(response.data);
 
         }).catch((error) => {
             if (error.response.status === 404) {
@@ -43,7 +43,6 @@ export default function MyRequests({ session }: any) {
             else {
                 setError(error.response.data.message);
             }
-            
         });
 
 
@@ -52,7 +51,7 @@ export default function MyRequests({ session }: any) {
     };
 
     return (
-        <section className="my-requests w-1/2">
+        <section className="my-requests w-full">
             <h2 className="text-2xl font-semibold mb-6">Requests Made</h2>
             <table className="min-w-full">
             {/* Table headers and rows */}
@@ -71,7 +70,7 @@ export default function MyRequests({ session }: any) {
                     <td className="text-gray-500 border px-4 py-3">{request.endpoint}</td>
                     <td className={`border px-4 py-3 ${request.status === 'Pending' ? 'text-yellow-500' : 'text-green-500'}`}>{request.status}</td>
                     <td className="border px-4 py-3">
-                    {request.status === 'Pending' && <button className="w-full bg-red-500 text-white px-3 py-1 rounded shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">Cancel</button>}
+                    {request.status === 'pending' && <button className="w-full bg-red-500 text-white px-3 py-1 rounded shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">Cancel</button>}
                     </td>
                 </tr>
                 ))}

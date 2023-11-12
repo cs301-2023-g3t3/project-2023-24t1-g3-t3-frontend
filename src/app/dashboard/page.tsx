@@ -1,9 +1,9 @@
 "use client"
 
 import { FaUserPlus } from 'react-icons/fa';
-import { FiSearch } from 'react-icons/fi';
+import { FiArrowDown, FiChevronDown, FiSearch } from 'react-icons/fi';
 import Image from 'next/image';
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Sidebar from '../components/Sidebar';
 import MyRequests from '../components/MyRequests';
@@ -16,6 +16,11 @@ import Header from '../components/Header';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import { sign } from 'crypto';
+import User from '../components/dashboard/UserRow';
+import UserRow from '../components/dashboard/UserRow';
+import React from 'react';
+import debounce from 'lodash.debounce';
+import CreateAccount from '../components/dashboard/CreateAccount';
 
 interface CustomSession {
   user: {
@@ -36,12 +41,11 @@ interface Request {
 }
 
 interface User {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
   role: string;
-  pointsBalance: number;
 }
 
 
@@ -61,30 +65,101 @@ export default function DashboardPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const { data: session } = useSession();
   const customSession = ((session as unknown) as CustomSession);
+
+  const headers = {
+    'Authorization': `Bearer ${customSession.accessToken}`,
+    'X-IDTOKEN': `${customSession.id_token}`
+  };
   
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [error, setError] = useState(null);
 
   const [people, setPeople] = useState<User[]>([]);
   const [userSearchOutput, setUserSearchOutput] = useState<User[]>([]); // Filtered by search term
-  const [searchTerm, setSearchTerm] = useState('');
+
   const [selectedRole, setSelectedRole] = useState('');
-  const [sortBy, setSortBy] = useState('');
+  const [searchName, setSearchName] = useState('');
+  const [searchId, setSearchId] = useState('');
+  const [searchEmail, setSearchEmail] = useState('');
 
-  // Calculate Total Users
-  const totalUsers = people.length || 0;
+  const [pageCount, setPageCount] = useState(1);
+  const [loadingMorePeople, setLoadingMorePeople] = useState(false);
+  const scrollableDivRef = useRef<HTMLDivElement>(null);
 
-  // // Calculate Average Points
-  const averagePoints = Math.round(people.reduce((acc, person) => acc + (person.pointsBalance || 0), 0) / (people.length || 1));
-  const maxPoints = Math.max(...people.map(person => person.pointsBalance || 0));
-  const minPoints = Math.min(...people.map(person => person.pointsBalance || 0));
+  const [enrollUser, setEnrollUser] = useState(false);
 
-  // Calculate number per role
-  const numberOfOwners = people.filter(person => person.role === 'Owner').length;
-  const numberOfManagers = people.filter(person => person.role === 'Manager').length;
-  const numberOfEngineers = people.filter(person => person.role === 'Engineer').length;
-  const numberOfProductManagers = people.filter(person => person.role === 'Product Manager').length;
-  const numberOfCustomers = people.filter(person => person.role === 'Customer').length;
+  const getRoleIdFromRoleName = (roleName: string) => {
+    const roleId = Object.values(roleMap).findIndex(role => role === roleName);
+    console.log(roleId);
+
+    if (roleId === -1) {
+      return "null";
+    }
+    return roleId;
+  }
+
+  const loadMorePeople = () => {
+    if (loadingMorePeople) {
+      return;
+    }
+
+    setLoadingMorePeople(true);
+
+    console.log("sending GET to /users/accounts/paginate?page=" + pageCount + "&size=50")
+    axios.get(`${apiUrl}/users/accounts/paginate?page=${pageCount}&size=50`, { headers })
+    .then(response => {
+      const users = response.data.data;
+      
+      // map role id to role name
+      const mappedUsers = users.map((user: { role: number | null; }) => ({
+        ...user,
+        role: roleMap[user.role !== null ? user.role : 0],
+        pointsBalance: 0
+
+      }));
+      setPeople([...people, ...mappedUsers]);
+      console.log("set output at 118")
+      setUserSearchOutput([...userSearchOutput, ...mappedUsers]);
+      setLoadingUsers(false);
+    }).catch(error => {
+      console.error(error);
+      // Handle errors for both requests
+      setError(error);
+      setLoadingUsers(false);
+    });
+
+    setLoadingMorePeople(false);
+  }
+
+  const handleScroll = () => {
+    if (!scrollableDivRef.current) {
+      return;
+    }
+    const { scrollTop, scrollHeight, clientHeight } = scrollableDivRef.current;
+    if (scrollTop + clientHeight === scrollHeight) {
+      setPageCount(prev => prev + 1);
+    }
+  }
+
+  useEffect(() => {
+    const div = scrollableDivRef.current;
+    if (div) {
+      div.addEventListener('scroll', handleScroll);
+    }
+    return () => {
+      if (div) {
+        div.removeEventListener('scroll', handleScroll);
+      }
+    }
+
+  }, []);
+
+  useEffect(() => {
+    if (searchName === '' && searchEmail === '' && searchId === '' && selectedRole === '') {
+    loadMorePeople();
+    console.log(pageCount);
+    }
+  }, [pageCount]);
 
   useEffect(() => {
     if (customSession) {
@@ -95,86 +170,90 @@ export default function DashboardPage() {
         signOut({callbackUrl: '/'});
         return; // Exit if the token is expired
       }
-      
-      const headers = {
-        'Authorization': `Bearer ${customSession.accessToken}`,
-        'X-IDTOKEN': `${customSession.id_token}`
-      };
 
-      Promise.all([
-        axios.get(`${apiUrl}/users/accounts/paginate?page=1&size=10`, { headers }),
-        axios.get(`${apiUrl}/points/accounts/paginate?page=1&size=10`, { headers })
-      ])
-      .then(([usersResponse, pointsResponse]) => {
-        console.log(usersResponse);
-        console.log(pointsResponse);
-        // Handle users
+      // Get users
+      axios.get(`${apiUrl}/users/accounts/paginate?page=1&size=50`, { headers })
+        .then(response => {
+          const users = response.data.data;
+          // map role id to role name
+          const mappedUsers = users.map((user: { role: number | null; }) => ({
+            ...user,
+            role: roleMap[user.role !== null ? user.role : 0],
+            pointsBalance: 0
 
-        // const mappedUsers = users.map((user: { role: number | null; }) => ({
-        //   ...user,
-        //   role: roleMap[user.role !== null ? user.role : 0],
-        //   pointsBalance: 0
-
-        // }));
-  
-        // Handle points
-        // const mappedPoints = pointsResponse.data;
-        // const newPeople = mappedUsers.map((person: { id: number; pointsBalance: any; }) => {
-
-
-        //   const pointsUser = mappedPoints.find((user: { userId: number; }) => user.userId === person.id);
-        //   if (!pointsUser) {
-        //     return person;
-        //   }
-          
-        //   person.pointsBalance = pointsUser.balance;
-        //   return person;
-        // });
-  
-        // Update state
-        // setPeople(newPeople);
-        // setUserSearchOutput(newPeople);
-        // setLoadingUsers(false);
-      })
-      .catch(error => {
-        console.error(error);
-        // Handle errors for both requests
-        setError(error);
-        setLoadingUsers(false);
-      });
+          }));
+          setPeople(mappedUsers);
+          console.log("set output at 182")
+          setUserSearchOutput(mappedUsers);
+          setLoadingUsers(false);
+        })
+        .catch(error => {
+          console.error(error);
+          // Handle errors for both requests
+          setError(error);
+          setLoadingUsers(false);
+        });
     }
   }, [customSession, apiUrl]);
-  
-  // Filter users by search term
-  useEffect(() => {
-    const filteredPeople = people.filter(person =>
-      (person.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      person.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.pointsBalance.toString().includes(searchTerm.toLowerCase()) ||
-      person.id.toString().includes(searchTerm.toLowerCase())
-      ) 
-    ).filter(person => {
-      if (selectedRole === '') {
-        return true;
-      } else {
-        return person.role === selectedRole;
-      }
-    });
-    
-    const sortedPeople = filteredPeople.sort((a, b) => {
-      if (sortBy === "Lowest") {
-        return a.pointsBalance - b.pointsBalance;
-      } else if (sortBy === "Highest") {
-        return b.pointsBalance - a.pointsBalance;
-      } else {
-        return 0;
-      }
-    });
-    setUserSearchOutput(sortedPeople);
-  }, [searchTerm, selectedRole, sortBy, people]);
 
+  const debouncedSearch = React.useCallback(
+    debounce(() => {
+      fetchUsers();
+    }, 300),
+    [searchName, searchEmail, searchId, selectedRole]
+  );
+  
+  const fetchUsers = () => {
+    const params = new URLSearchParams();
+    if (searchName) params.append('name', searchName);
+    if (searchEmail) params.append('email', searchEmail);
+    if (searchId) params.append('id', searchId);
+    if (selectedRole) {
+      const roleId = getRoleIdFromRoleName(selectedRole);
+      if (roleId) params.append('role', roleId.toString());
+    }
+    if (params.toString() === '') {
+      console.log("set output at 261")
+      if (people.length === 0) {
+        return;
+      }
+      setUserSearchOutput(people);
+      setLoadingUsers(false); 
+      return;
+    }
+    console.log("Sending GET to /users/accounts?" + params);
+    axios.get(`${apiUrl}/users/accounts?${params}`, { headers })
+    .then(response => {
+      const users = response.data;
+      
+      // map role id to role name
+      const mappedUsers = users.map((user: { role: number | null; }) => ({
+        ...user,
+        role: roleMap[user.role !== null ? user.role : 0],
+        pointsBalance: 0
+
+      }));
+      console.log("set output at 276")
+      setUserSearchOutput(mappedUsers);
+      setLoadingUsers(false);
+      
+    }).catch(error => {
+      console.error(error);
+      // Handle errors for both requests
+      setError(error);
+      setLoadingUsers(false);
+    });
+  }
+  
+  useEffect(() => {
+    setLoadingUsers(true);
+    debouncedSearch();
+    
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+  
 
   if (!session) {
     return (
@@ -195,55 +274,40 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold text-gray-600">Notice</h2>
             <p className="mt-2 text-gray-500">There are no new announcements at this time.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <div className="p-6 bg-white rounded shadow">
-              <h2 className="text-lg font-semibold text-gray-600">Users</h2>
-              {loadingUsers ? 
-                  <div className='flex w-full justify-center'>
-                    <div className={ `animate-spin rounded-full ${"h-10"} ${"w-10"} border-b border-black` } />
-                  </div> : 
-                <p className="mt-2 text-gray-500">
-                Total users: {totalUsers}
-                <br />
-                Owners: {numberOfOwners}
-                <br />
-                Managers: {numberOfManagers}
-                <br />
-                Engineers: {numberOfEngineers}
-                <br />
-                Product Managers: {numberOfProductManagers}
-                <br />
-                Customers: {numberOfCustomers}
-                </p>}
-              {error && <p className="mt-2 text-gray-500">Error: {error}</p>}
-              
-            </div>
-            <div className="p-6 bg-white rounded shadow">
-              <h2 className="text-lg font-semibold text-gray-600">Points</h2>
-              {loadingUsers ? 
-                <div className='flex w-full justify-center'>
-                  <div className={ `animate-spin rounded-full ${"h-10"} ${"w-10"} border-b border-black` } />
-                </div> : <p className="mt-2 text-gray-500">
-                Max points: {maxPoints}
-                <br />
-                Average points: {averagePoints}
-                <br />
-                Min points: {minPoints}
-                </p>}
-              {error && <p className="mt-2 text-gray-500">Error: {error}</p>}
-            </div>
-          </div>
+          
           
           <div className="flex justify-between items-center mb-4">
-            <div className="flex gap-4">
+            <div className="flex flex-col lg:flex-row lg:gap-2 gap-4">
               <div className='flex items-center'>
                 <FiSearch className="text-gray-400 h-5 w-5" />
                 <input
                   type="text"
-                  placeholder="Search users..."
+                  placeholder="Search name..."
                   className="ml-2 p-1 border rounded"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
+                  value={searchName}
+                  onChange={e => setSearchName(e.target.value)}
+                />
+              </div>
+
+              <div className='flex items-center'>
+                <FiSearch className="text-gray-400 h-5 w-5" />
+                <input
+                  type="text"
+                  placeholder="Search ID..."
+                  className="ml-2 p-1 border rounded"
+                  value={searchId}
+                  onChange={e => setSearchId(e.target.value)}
+                />
+              </div>
+
+              <div className='flex items-center'>
+                <FiSearch className="text-gray-400 h-5 w-5" />
+                <input
+                  type="text"
+                  placeholder="Search email..."
+                  className="ml-2 p-1 border rounded"
+                  value={searchEmail}
+                  onChange={e => setSearchEmail(e.target.value)}
                 />
               </div>
               
@@ -256,62 +320,39 @@ export default function DashboardPage() {
                 <option value="Customer">Customer</option>
               </select>
 
-              {/* Sort by points */}
-              <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                <option>Sort by points</option>
-                <option value="Highest">Highest</option>
-                <option value="Lowest">Lowest</option>
-              </select>
+
             </div>
             
-            <Link className="bg-blue-500 text-white p-2 rounded mr-2" href="/enroll">
+            <button 
+              className="bg-blue-500 text-white p-2 rounded mr-2" 
+              onClick={() => {setEnrollUser(true)}}
+            >
               <FaUserPlus className="h-5 w-5" />
-            </Link>
+            </button>
+
           </div>
 
           {/* Users */} 
-          <div className='bg-white rounded shadow p-4 max-h-[375px] overflow-y-auto'>
+          <div ref={scrollableDivRef} className='bg-white rounded shadow p-4 max-h-[375px] overflow-y-auto'>
             <ul role="list" className="divide-y divide-gray-100">
               {loadingUsers && <div className='flex w-full justify-center'>
                                   <div className={ `animate-spin rounded-full ${"h-10"} ${"w-10"} border-b border-black` } />
                                 </div>}
               {userSearchOutput.map((user) => (
-                <li key={user.email} className="flex justify-between gap-x-6 py-5 ">
-                  <div className="flex min-w-0 gap-x-4">
-                    <img className="h-12 w-12 flex-none rounded-full bg-gray-50" src="/images/profile.jpg" alt="" />
-                    <div className="min-w-0 flex-auto">
-                      <p className="text-sm font-semibold leading-6 text-gray-900">{user.firstName} ({user.role})</p>
-                      <p className="mt-1 truncate text-xs leading-5 text-gray-500">{user.email}</p>
-                      <p className="mt-1 text-xs leading-5 text-gray-500">Points: {user.pointsBalance} </p>
-                      <p className='mt-1 text-xs leading-5 text-gray-500'>User ID: {user.id}</p>
-                    </div>
-                  </div>
-                  <div className="shrink-0 sm:flex sm:flex-col sm:items-end">
-                    <Link className="mr-4 text-gray-500" href={`/dashboard/${user.id}`}>Edit</Link>
-                  </div>
-                  
-                </li>
+                <UserRow 
+                  key={user.id + "userRowParent"}
+                  id={user.id}
+                  firstName={user.firstName}
+                  lastName={user.lastName}
+                  email={user.email}
+                  role={user.role}
+                />
               ))}
             </ul>
           </div>
           
-          
-          {/* <div className="flex lg:flex-row md:flex-col justify-between bg-white rounded-lg shadow-lg p-6 gap-4 text-gray-700 mt-4">
-            <MyRequests session={session} />
-            <ApproveRequests session={session} />
-          </div> */}
           <>
-            <style>
-              {`
-                @media (min-width: 1365px) {
-                  .responsive-flex {
-                    display: flex;
-                    flex-direction: row !important;
-                  }
-                }
-              `}
-            </style>
-            <div className="flex flex-col lg:flex-row justify-between bg-white rounded-lg shadow-lg p-6 gap-4 text-gray-700 mt-4 responsive-flex">
+            <div className="flex flex-col justify-between bg-white rounded-lg shadow-lg p-6 gap-4 text-gray-700 mt-4">
               <MyRequests session={session} />
               <ApproveRequests session={session} />
             </div>
@@ -321,6 +362,40 @@ export default function DashboardPage() {
           
         </main>
       </div>
+
+      {/* Enroll User Modal */}
+      {enrollUser && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">Enroll User</h3>
+                  <button
+                    className="bg-white rounded-full p-2 hover:bg-gray-100"
+                    onClick={() => setEnrollUser(false)}
+                  >
+                    <svg className="h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+                <div>
+                  <CreateAccount />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

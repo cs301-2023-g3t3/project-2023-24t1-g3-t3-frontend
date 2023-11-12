@@ -13,7 +13,8 @@ interface CustomSession {
 
 export default function Sidebar() {
     const { data: session } = useSession();
-
+    const customSession = ((session as unknown) as CustomSession);
+    console.log(customSession.role);
     const email = session?.user?.email?.split('@')[0];
     // Assuming role will be present at runtime.
     const role = ((session as unknown) as CustomSession)?.role || "Role not found";
@@ -37,17 +38,24 @@ export default function Sidebar() {
                     <li className="mb-2">
                         <a href="/dashboard" className="text-gray-600 hover:text-gray-800">Dashboard</a>
                     </li>
-                    <li className="mb-2">
-                        <a href="/logs" className="text-gray-600 hover:text-gray-800">Logs</a>
-                    </li>
-            
-                    <li className="mb-2">
-                        <a href="/access-control" className="text-gray-600 hover:text-gray-800">Access Control</a>
-                    </li>
+                    {["Owner", "Manager", "Engineer"].includes(customSession.role) && (
+                        <li className="mb-2">
+                            <a href="/logs" className="text-gray-600 hover:text-gray-800">Logs</a>
+                        </li>
+                    )}
+                    
 
-                    <li className="mb-2">
-                        <a href="/maker-checker" className="text-gray-600 hover:text-gray-800">Maker Checker</a>
-                    </li>
+                    {customSession.role === "Owner" && (
+                        <li className="mb-2">
+                            <a href="/access-control" className="text-gray-600 hover:text-gray-800">Access Control</a>
+                        </li>
+                    )}
+                    
+                    {customSession.role === "Owner" && (
+                        <li className="mb-2">
+                            <a href="/maker-checker" className="text-gray-600 hover:text-gray-800">Maker Checker</a>
+                        </li>
+                    )}
                 </ul>
                 <div className='flex flex-col justify-end flex-grow'>
                     <div className='flex justify-between items-center'>

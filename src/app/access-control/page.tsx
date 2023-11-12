@@ -12,6 +12,7 @@ import Forbidden from '../components/Forbidden';
 import Header from '../components/Header';
 import { useRouter } from 'next/navigation';
 import { access } from 'fs';
+import { notification } from 'antd';
 
 interface CustomSession {
   user: {
@@ -212,6 +213,10 @@ export default function AccessControl() {
       });
 
       setSavedSuccess(true);
+      notification.success({
+        message: 'Changes saved successfully!',
+        description: 'Changes saved successfully!',
+      });
 
     } catch (error) {
       console.log(error);
@@ -356,7 +361,7 @@ export default function AccessControl() {
                 
               </div>
 
-              {savedSuccess && (
+              {/* {savedSuccess && (
                   <div className="flex w-full mt-6 flex items-center justify-end gap-x-6">
                       <p className="text-green-600 font-semibold">Changes saved successfully!</p>
                       <svg className="h-6 w-6 text-green-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
@@ -364,7 +369,7 @@ export default function AccessControl() {
                       </svg>
                       
                   </div>
-              )}
+              )} */}
 
               {createAccessPointModal && (
                 <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
