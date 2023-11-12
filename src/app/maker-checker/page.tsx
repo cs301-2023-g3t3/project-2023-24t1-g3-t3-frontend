@@ -35,6 +35,12 @@ interface Role {
     name: string;
 }
 
+interface AccessPoint {
+    endpoint: string;
+    id: number;
+    name: string;
+}
+
 export default function MakerChecker() {
     const router = useRouter();
     const { data: session } = useSession();
@@ -53,21 +59,25 @@ export default function MakerChecker() {
         maker: [],
     } as Permission);
 
-    const [searchTerm, setSearchTerm] = useState('');
-
-
-    const [roles, setRoles] = useState<Role[]>([]);
-
 
     const headers = { 
         'Authorization': `Bearer ${customSession.accessToken}`, 
         'X-IDTOKEN': `${customSession.id_token}` 
     };
 
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const [accessPoints, setAccessPoints] = useState<AccessPoint[]>([]);
+    
+
+    const [roles, setRoles] = useState<Role[]>([]);
+
+
     useEffect(() => {
         Promise.all([
             axios.get(`${apiUrl}/makerchecker/permission`, { headers }),
             axios.get(`${apiUrl}/users/roles`, { headers }),
+            axios.get(`${apiUrl}/users/access-points`, { headers })
 
             ]).then((responses) => {
             const permissions = responses[0].data;
@@ -77,6 +87,9 @@ export default function MakerChecker() {
 
             const roles = responses[1].data;
             setRoles(roles);
+
+            const accessPoints = responses[2].data;
+            setAccessPoints(accessPoints);
 
             }).catch((error) => {
             console.log(error);
@@ -316,12 +329,10 @@ export default function MakerChecker() {
                                         </h3>
     
                                         <div className="mt-2">
-                                            <input 
-                                                type="text" 
-                                                name="endpoint" 
-                                                id="endpoint" 
-                                                className="pl-2 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-500 rounded-md h-8" 
-                                                placeholder="Endpoint"
+                                            <select
+                                                id="endpoint"
+                                                name="endpoint"
+                                                className="mt-2 pl-2 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-500 rounded-md h-8"
                                                 onChange={(e) => {
                                                     setCreatePermission((prevPermission) => {
                                                         return {
@@ -330,7 +341,13 @@ export default function MakerChecker() {
                                                         } as Permission;
                                                     });
                                                 }}
-                                            />
+                                            >
+                                                <option value="">Select Endpoint</option>
+                                                {accessPoints && accessPoints.map((accessPoint) => (
+                                                    <option key={accessPoint.id} value={accessPoint.endpoint}>{accessPoint.name}</option>
+                                                ))}
+
+                                            </select>
                                         </div>
 
                                         <h4 className="text-sm leading-6 font-medium text-gray-900 mt-4">
