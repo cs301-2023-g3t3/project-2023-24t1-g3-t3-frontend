@@ -7,7 +7,7 @@ interface props {
 	setStart: (start: string) => void;
 	end: string;
 	setEnd: (end: string) => void;
-	startQuery: () => void;
+	startQuery: (search: string) => void;
 }
 
 const SearchBar = (props: props) => {
@@ -49,7 +49,7 @@ const SearchBar = (props: props) => {
 			</div>
 			<div 
 				className="flex items-center justify-center cursor-pointer w-2/12 bg-blue-950 rounded-md py-3 mt-2 text-white text-sm"
-				onClick={props.startQuery}
+				onClick={() => props.startQuery(props.search)}
 			>
 				Search
 			</div>

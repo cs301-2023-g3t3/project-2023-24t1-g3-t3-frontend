@@ -116,7 +116,7 @@ export default function DashboardPage() {
 		getRetention();
 	}, [])
 
-	const startQuery = async () => {
+	const startQuery = async (search: string) => {
 		try {
 			setLoadingLogs(true);
 			setPage(0);
@@ -149,7 +149,7 @@ export default function DashboardPage() {
 	}
 
 	useEffect(() => {
-		startQuery();
+		startQuery(search);
 	}, []);
 
 	useEffect(() => {
@@ -234,7 +234,7 @@ export default function DashboardPage() {
 								setStart={setStart}
 								end={end}
 								setEnd={setEnd}
-								startQuery={startQuery} 
+								startQuery={startQuery}
 							/>
 						</div>
 					</div>
@@ -258,7 +258,12 @@ export default function DashboardPage() {
 									const ip = JSON.parse(logGroup[1].value).SOURCE_IP;
 									return (
 										<div className='bg-white rounded shadow p-4 max-h-[500px] overflow-y-auto' key={ `log-card-${idx}` }>
-											<LogCard logGroup={logGroup} location={locations[ip]} />
+											<LogCard 
+												logGroup={logGroup} 
+												location={locations[ip]} 
+												setSearch={setSearch} 
+												startQuery={startQuery} 
+											/>
 										</div>
 									)
 								}) }
