@@ -80,7 +80,8 @@ export default function EditPointsAccount({ pointsAccount }: props) {
 		{ id: 4, name: "Product Manager" },
 	]);
 	
-	const [amount, setAmount] = useState("");
+	const [amount, setAmount] = useState("0");
+    const [operation, setOperation] = useState("add");
 
 	const [confirmModal, setConfirmModal] = useState(false);
 	const [requestPermissionModal, setRequestPermissionModal] = useState(false);
@@ -95,22 +96,24 @@ export default function EditPointsAccount({ pointsAccount }: props) {
 	const handleEditPointsAccount = async () => {
 		setConfirmModal(false);
 
-        if (isNaN(parseFloat(amount))) {
+        if (isNaN(parseInt(amount))) {
             notification.error({
                 message: 'Error',
                 description: 'Amount must be a number.',
             });
-            return
+
+            return;
         }
 
 		setLoading(true);
 		
 		const account = {
 			id: pointsAccount.id,
-            amount: amount,
+            action: operation,
+            amount: parseInt(amount),
 		};
-		console.log(account);
-		axios.put(`${apiUrl}/users/accounts/${pointsAccount.id}`, account, { headers })
+		
+		axios.put(`${apiUrl}/points/accounts/${pointsAccount.id}`, account, { headers })
 		.then((res) => {
 			console.log(res);
 			setLoading(false);
@@ -133,8 +136,8 @@ export default function EditPointsAccount({ pointsAccount }: props) {
 
 		const data = {
 			id: pointsAccount,
-			action: "add",
-			amount: amount,
+			action: operation,
+			amount: parseInt(amount),
 		};
 		
 		const request = {
@@ -280,15 +283,24 @@ export default function EditPointsAccount({ pointsAccount }: props) {
 				<main className="p-4">
 					<form className="flex flex-col">
 						<div className="mb-4">
-							<label className="block text-gray-700">Amount to Change Balance By</label>
+							<label className="block text-gray-700">Balance</label>
+                            <select 
+                                value={operation}
+                                onChange={(e) => setOperation(e.target.value)}
+                                className="mt-2 p-2 w-full border rounded"
+                            >
+                                <option value="add">Add</option>
+                                <option value="deduct">Deduct</option>
+                                <option value="override">Override</option>
+                            </select>
 							<input
                                 type="text" 
                                 className="mt-2 p-2 w-full border rounded"
                                 value={amount}
                                 onChange={(e) => {
-                                    const re = /^[0-9\b-]+$/;
+                                    const re = /^[0-9\b]+$/;
                                     if (e.target.value === '' || re.test(e.target.value)) {
-                                        setAmount(e.target.value)
+                                        setAmount(e.target.value);
                                     }
                                 }}
                             />
