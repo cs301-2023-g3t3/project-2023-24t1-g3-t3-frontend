@@ -179,7 +179,7 @@ export default function EditPointsAccount({ pointsAccount }: props) {
 			setLoading(false);
 		}).catch((err) => {
 			console.log(err);
-			if (err.response.status === 404) {
+			if (err.response.status === 403) {
 				notification.error({
 					message: 'Error',
 					description: 'Not allowed to edit points account.',
