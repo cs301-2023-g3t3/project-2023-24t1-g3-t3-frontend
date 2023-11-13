@@ -151,27 +151,19 @@ export default function EditAccount({ user }: props) {
 
 		const endpoint = type == "edit" ? `/*/PUT/users/accounts/*` : `/*/DELETE/users/accounts/*`;
 
-		let request;
-		if (type == "edit") {
-			const data = {
-				id: user.id,
-				firstName,
-				lastName,
-				email,
-				...(role !== 0 && { role: role })
-			};
-			request = {
-				checkerId,
-				endpoint,
-				data
-			};
-		} else {
-			request = {
-				id: user.id,
-				checkerId,
-				endpoint,
-			};
-		}
+		const data = {
+			id: user.id,
+			firstName,
+			lastName,
+			email,
+			...(role !== 0 && { role: role })
+		};
+		
+		const request = {
+			checkerId,
+			endpoint,
+			data
+		};
 
 		axios.post(`${apiUrl}/makerchecker/record`, request, { headers })
 		.then((res) => {
