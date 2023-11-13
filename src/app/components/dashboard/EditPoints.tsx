@@ -135,7 +135,7 @@ export default function EditPointsAccount({ pointsAccount }: props) {
 		const endpoint = `/*/PUT/points/accounts/*`;
 
 		const data = {
-			id: pointsAccount,
+			id: pointsAccount.id,
 			action: operation,
 			amount: parseInt(amount),
 		};
