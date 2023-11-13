@@ -18,7 +18,6 @@ export default function MyRequests({ session }: any) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const [requests, setRequests] = useState<Request[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
     const [isEmpty, setIsEmpty] = useState(false);
 
@@ -83,7 +82,10 @@ export default function MyRequests({ session }: any) {
                 setIsEmpty(true);
             } 
             else {
-                setError(error.response.data.message);
+                notification.error({
+                    message: 'Failed to fetch pending makercheckers',
+                    description: error.message,
+                })
             }
         });
 
@@ -126,7 +128,6 @@ export default function MyRequests({ session }: any) {
             </tbody>
             </table>
             {isEmpty && (<div className="mt-4 text-center text-gray-500">No requests made yet.</div>)}
-            {error && (<div className="mt-4 text-center text-red-500">{error}</div>)}
         </section>
     );
 }

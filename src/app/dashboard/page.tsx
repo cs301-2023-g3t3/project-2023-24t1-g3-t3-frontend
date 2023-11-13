@@ -22,6 +22,7 @@ import React from 'react';
 import debounce from 'lodash.debounce';
 import CreateAccount from '../components/dashboard/CreateAccount';
 import EditAccount from '../components/dashboard/EditAccount';
+import EditPointsAccount from '../components/dashboard/EditPoints';
 
 interface CustomSession {
 	user: {
@@ -49,6 +50,11 @@ interface User {
 	role: string;
 }
 
+interface PointsAccount {
+    id: string;
+    userId: string;
+    balance: number;
+}
 
 interface RoleMap {
 	[key: number]: string;
@@ -89,6 +95,7 @@ export default function DashboardPage() {
 
 	const [enrollUser, setEnrollUser] = useState(false);
 	const [currentEditUser, setCurrentEditUser] = useState<User>();
+	const [currentEditPoints, setCurrentEditPoints] = useState<PointsAccount>();
 
 	const getRoleIdFromRoleName = (roleName: string) => {
 		const roleId = Object.values(roleMap).findIndex(role => role === roleName);
@@ -107,7 +114,6 @@ export default function DashboardPage() {
 		setLoadingMorePeople(true);
 		setLoadingUsers(true);
 		
-		console.log("sending GET to /users/accounts/paginate?page=" + pageCount + "&size=50")
 		axios.get(`${apiUrl}/users/accounts/paginate?page=${pageCount}&size=50`, { headers })
 		.then(response => {
 			const users = response.data.data;
@@ -119,8 +125,8 @@ export default function DashboardPage() {
 				pointsBalance: 0
 
 			}));
+
 			setPeople([...people, ...mappedUsers]);
-			console.log("set output at 118")
 			setUserSearchOutput([...userSearchOutput, ...mappedUsers]);
 			setLoadingUsers(false);
 		}).catch(error => {
@@ -158,21 +164,18 @@ export default function DashboardPage() {
 
 	useEffect(() => {
 		if (searchName === '' && searchEmail === '' && searchId === '' && selectedRole === '') {
-		loadMorePeople();
-		console.log(pageCount);
+			loadMorePeople();
 		}
 	}, [pageCount]);
 
 	useEffect(() => {
 		if (customSession) {
-			console.log(customSession.accessToken)
-			console.log(customSession.id_token);
 			const decoded = jwt.decode(customSession.accessToken) as jwt.JwtPayload;
 			if (decoded && decoded.exp && decoded.exp * 1000 < Date.now()) {
 				signOut({callbackUrl: '/'});
 				return; // Exit if the token is expired
 			}
-
+			console.log('yes')
 			// Get users
 			axios.get(`${apiUrl}/users/accounts/paginate?page=1&size=50`, { headers })
 				.then(response => {
@@ -184,8 +187,8 @@ export default function DashboardPage() {
 						pointsBalance: 0
 
 					}));
+		
 					setPeople(mappedUsers);
-					console.log("set output at 182")
 					setUserSearchOutput(mappedUsers);
 					setLoadingUsers(false);
 				})
@@ -215,7 +218,6 @@ export default function DashboardPage() {
 			if (roleId) params.append('role', roleId.toString());
 		}
 		if (params.toString() === '') {
-			console.log("set output at 261")
 			if (people.length === 0) {
 				return;
 			}
@@ -223,7 +225,7 @@ export default function DashboardPage() {
 			setLoadingUsers(false); 
 			return;
 		}
-		console.log("Sending GET to /users/accounts?" + params);
+
 		axios.get(`${apiUrl}/users/accounts?${params}`, { headers })
 		.then(response => {
 			const users = response.data;
@@ -235,7 +237,7 @@ export default function DashboardPage() {
 				pointsBalance: 0
 
 			}));
-			console.log("set output at 276")
+
 			setUserSearchOutput(mappedUsers);
 			setLoadingUsers(false);
 			
@@ -342,6 +344,7 @@ export default function DashboardPage() {
 									key={user.id + idx + "userRowParent"}
 									user={user}
 									setCurrentEditUser={setCurrentEditUser}
+									setCurrentEditPoints={setCurrentEditPoints}
 								/>
 							))}
 							{ loadingUsers && (
@@ -423,6 +426,40 @@ export default function DashboardPage() {
 								</div>
 								<div>
 									<EditAccount user={currentEditUser} />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Edit Points Modal */}
+			{currentEditPoints && (
+				<div className="fixed z-10 inset-0 overflow-y-auto">
+					<div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+						<div className="fixed inset-0 transition-opacity" aria-hidden="true">
+							<div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+						</div>
+
+						<span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+						<div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+							<div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+								<div className="flex justify-between items-center mb-4">
+									<h3 className="text-lg leading-6 font-medium text-gray-900">Edit Points Account</h3>
+									<button
+										className="bg-white rounded-full p-2 hover:bg-gray-100"
+										onClick={() => setCurrentEditPoints(undefined)}
+									>
+										<svg className="h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+												 viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+														d="M6 18L18 6M6 6l12 12"/>
+										</svg>
+									</button>
+								</div>
+								<div>
+									<EditPointsAccount pointsAccount={currentEditPoints} />
 								</div>
 							</div>
 						</div>

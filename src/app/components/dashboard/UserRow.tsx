@@ -32,6 +32,7 @@ interface PointsAccount {
 interface props {
     user: User;
     setCurrentEditUser: (user: User) => void;
+    setCurrentEditPoints: (pointsAccount: PointsAccount) => void;
 }
 
 const Spinner = () => {
@@ -43,7 +44,7 @@ const Spinner = () => {
 }
 
 
-export default function UserRow({ user, setCurrentEditUser }: props) {
+export default function UserRow({ user, setCurrentEditUser, setCurrentEditPoints }: props) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const { data: session } = useSession();
     const customSession = ((session as unknown) as CustomSession);
@@ -127,21 +128,27 @@ export default function UserRow({ user, setCurrentEditUser }: props) {
                         <Spinner />
                     ): (hasFetchedPointsAccounts ? (pointsAccounts.map((pointsAccount) => (
                         <dl key={pointsAccount.id + "PointsAccount"}>
-                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt className="text-sm leading-5 font-medium text-gray-500">
-                                Points Account
-                            </dt>
-                            <dd className="mt-1 text-sm leading-5 text-gray-900 sm:mt-0 sm:col-span-2">
-                                {pointsAccount.id}
-                            </dd>
+                            <div className="relative bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                <dt className="text-sm leading-5 font-medium text-gray-500">
+                                    Points Account
+                                </dt>
+                                <dd className="mt-1 text-sm leading-5 text-gray-900 sm:mt-0 sm:col-span-2">
+                                    {pointsAccount.id}
+                                </dd>
+                                <div 
+                                    className="absolute flex items-center mr-4 h-full right-0 text-gray-500 hover:underline cursor-pointer"
+                                    onClick={() => setCurrentEditPoints(pointsAccount)}
+                                >
+                                     Edit
+                                </div>
                             </div>
                             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt className="text-sm leading-5 font-medium text-gray-500">
-                                Points Balance
-                            </dt>
-                            <dd className="mt-1 text-sm leading-5 text-gray-900 sm:mt-0 sm:col-span-2">
-                                {pointsAccount.balance}
-                            </dd>
+                                <dt className="text-sm leading-5 font-medium text-gray-500">
+                                    Points Balance
+                                </dt>
+                                <dd className="mt-1 text-sm leading-5 text-gray-900 sm:mt-0 sm:col-span-2">
+                                    {pointsAccount.balance}
+                                </dd>
                             </div>
                         </dl>
                     ))) : (

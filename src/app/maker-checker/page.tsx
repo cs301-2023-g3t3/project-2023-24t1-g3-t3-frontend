@@ -11,6 +11,7 @@ import { useSession } from 'next-auth/react';
 import Forbidden from '../components/Forbidden';
 import Header from '../components/Header';
 import { useRouter } from 'next/navigation';
+import { notification } from 'antd';
 
 interface CustomSession {
   user: {
@@ -260,11 +261,17 @@ export default function MakerChecker() {
                                         .then((response) => {
                                             console.log(response.data);
                                             setSelectedPermission(undefined);
+
+                                            notification.success({
+                                                message: 'Success',
+                                                description: 'Successfully updated endpoint',
+                                            })
+
+                                            window.location.reload();
                                             
                                         }).catch((error) => {
                                             console.log(error);
                                         });
-                                    
                                     }}
                                 >
                                     Save
@@ -283,6 +290,8 @@ export default function MakerChecker() {
                                                 setPermissions(response.data);
                                                 setFilteredPermissions(response.data);
                                                 setSearchTerm('');
+
+                                                window.location.reload();
                                             }).catch((error) => {console.log(error);});
                                         }).catch((error) => {console.log(error);});
                                     }}

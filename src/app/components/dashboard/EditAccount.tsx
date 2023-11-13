@@ -81,7 +81,6 @@ export default function EditAccount({ user }: props) {
 		{ id: 4, name: "Product Manager" },
 	]);
 	
-	
 	const [firstName, setFirstName] = useState(user.firstName);
 	const [lastName, setLastName] = useState(user.lastName);
 	const [email, setEmail] = useState(user.email);
@@ -158,7 +157,7 @@ export default function EditAccount({ user }: props) {
 			email,
 			...(role !== 0 && { role: role })
 		};
-		
+
 		const request = {
 			checkerId,
 			endpoint,
@@ -256,7 +255,7 @@ export default function EditAccount({ user }: props) {
 				{requestPermissionModal && (
 					<Confirm
 						title="Insufficient Permission"
-						message="You do not have the sufficient permissions to create the account. Would you like to request for approval?"
+						message="You do not have the sufficient permissions to edit/delete the account. Would you like to request for approval?"
 						onConfirm={() => verifyIfCanMakerCheckerEdit()}
 						onCancel={() => setRequestPermissionModal(false)}
 					/>
@@ -389,9 +388,6 @@ export default function EditAccount({ user }: props) {
 					</button>
 				</div>
 			</div>
-
-			
-
 		</>
 	);
 }

@@ -24,7 +24,6 @@ export default function ApproveRequests({ session }: any) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const [requests, setRequests] = useState<Request[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
     const [isEmpty, setIsEmpty] = useState(false);
 
@@ -54,6 +53,8 @@ export default function ApproveRequests({ session }: any) {
                     description: 'Request has been denied successfully',
                 });
             }
+
+            window.location.reload();
             
         }).catch((error) => {
             console.log(error);
@@ -82,7 +83,10 @@ export default function ApproveRequests({ session }: any) {
             if (error.response.status === 404) {
                 setIsEmpty(true);
             } else {
-                setError(error);
+                notification.error({
+                    message: 'Failed to fetch makerchecker requests',
+                    description: error.message,
+                })
             }
             
         });
@@ -135,7 +139,6 @@ export default function ApproveRequests({ session }: any) {
             </tbody>
             </table>
             {isEmpty && (<div className="mt-4 text-center text-gray-500">No requests to approve</div>)}
-            {error && (<div className="mt-4 text-center text-red-500">{error}</div>)}
         </section>
     );
 }
