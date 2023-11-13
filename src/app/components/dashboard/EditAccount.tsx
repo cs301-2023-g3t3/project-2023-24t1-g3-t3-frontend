@@ -149,11 +149,12 @@ export default function EditAccount({ user }: props) {
 	const createMakerCheckerRecord = async () => {
 		setLoading(true);
 
-		const endpoint = type == "edit" ? `/*/PUT/users/accounts/${user.id}` : `/*/DELETE/users/accounts/${user.id}`;
+		const endpoint = type == "edit" ? `/*/PUT/users/accounts/*` : `/*/DELETE/users/accounts/*`;
 
 		let request;
 		if (type == "edit") {
 			const data = {
+				id: user.id,
 				firstName,
 				lastName,
 				email,
@@ -166,6 +167,7 @@ export default function EditAccount({ user }: props) {
 			};
 		} else {
 			request = {
+				id: user.id,
 				checkerId,
 				endpoint,
 			};
@@ -180,6 +182,8 @@ export default function EditAccount({ user }: props) {
 				description: 'Request sent.',
 			});
 			setLoading(false);
+
+			window.location.reload();
 		}).catch((err) => {
 			console.log(err);
 		});
@@ -187,7 +191,7 @@ export default function EditAccount({ user }: props) {
 
 	const verifyIfCanMakerCheckerEdit = async () => {
 		setLoading(true);
-		const endpoint = `/*/PUT/users/accounts/${user.id}`;
+		const endpoint = `/*/PUT/users/accounts/*`;
 
 		const request = {
 			endpoint,
@@ -214,7 +218,7 @@ export default function EditAccount({ user }: props) {
 
 	const verifyIfCanMakerCheckerDelete = async () => {
 		setLoading(true);
-		const endpoint = `/*/DELETE/users/accounts/${user.id}`;
+		const endpoint = `/*/DELETE/users/accounts/*`;
 
 		const request = {
 			endpoint,
@@ -315,7 +319,7 @@ export default function EditAccount({ user }: props) {
 											<div className="mb-4">
 												<label className="block text-gray-700">Select a checker</label>
 												<select 
-													value={checkers}
+													value={checkerId}
 													onChange={(e) => setCheckerId(e.target.value)}
 													className="mt-2 p-2 w-full border rounded">
 													{checkers && checkers.map((checker) => (
@@ -372,7 +376,7 @@ export default function EditAccount({ user }: props) {
 				</main>
 				<div className='flex w-full justify-between'>
 					<button
-							className="bg-red-500 text-white p-2 rounded"
+						className="bg-red-500 text-white p-2 rounded"
 						onClick={(e) => {
 							e.preventDefault();
 							setType("delete");

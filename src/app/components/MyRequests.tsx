@@ -55,6 +55,8 @@ export default function MyRequests({ session }: any) {
                     description: 'Request has been denied successfully',
                 });
             }
+
+            window.location.reload();
             
         }).catch((error) => {
             console.log(error);

@@ -246,7 +246,7 @@ export default function CreateAccount() {
                       <div className="mb-4">
                         <label className="block text-gray-700">Select a checker</label>
                         <select 
-                          value={checkers}
+                          value={checkerId}
                           onChange={(e) => setCheckerId(e.target.value)}
                           className="mt-2 p-2 w-full border rounded">
                           {checkers && checkers.map((checker) => (
