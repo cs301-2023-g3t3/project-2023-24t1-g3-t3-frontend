@@ -44,6 +44,7 @@ interface User {
 
 interface props {
 	user: User;
+	roleMap: { [ key: number ]: string }
 }
 
 const Spinner = () => {
@@ -63,7 +64,7 @@ const Spinner = () => {
 	);
 }
 	
-export default function EditAccount({ user }: props) {
+export default function EditAccount({ user, roleMap }: props) {
 	const { data: session } = useSession();
 	const customSession = ((session as unknown) as CustomSession);
 	const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -72,19 +73,16 @@ export default function EditAccount({ user }: props) {
 		'Authorization': `Bearer ${customSession.accessToken}`,
 		'X-IDTOKEN': `${customSession.id_token}`,
 	};
-
-	const [roles, setRoles] = useState<Role[]>([
-		{ id: 0, name: "Customer" },
-		{ id: 1, name: "Owner" },
-		{ id: 2, name: "Manager" },
-		{ id: 3, name: "Engineer" },
-		{ id: 4, name: "Product Manager" },
-	]);
 	
 	const [firstName, setFirstName] = useState(user.firstName);
 	const [lastName, setLastName] = useState(user.lastName);
 	const [email, setEmail] = useState(user.email);
-	const [role, setRole] = useState(roles.findIndex((role) => role.name === user.role));
+
+	const roleEntry = Object.entries(roleMap).find(([id, name]) => name === user.role)
+	const [role, setRole] = useState(
+		roleEntry ? roleEntry[0] : 0
+	);
+
 	const [type, setType] = useState("");
 
 	const [confirmModal, setConfirmModal] = useState(false);
@@ -108,6 +106,7 @@ export default function EditAccount({ user }: props) {
 			email,
 			...(role !== 0 && { role: role })
 		};
+		
 		console.log(account);
 		axios.put(`${apiUrl}/users/accounts/${user.id}`, account, { headers })
 		.then((res) => {
@@ -345,7 +344,7 @@ export default function EditAccount({ user }: props) {
 													onChange={(e) => setCheckerId(e.target.value)}
 													className="mt-2 p-2 w-full border rounded">
 													{checkers && checkers.map((checker) => (
-														<option key={checker.id} value={checker.id}>{checker.firstName} -- {roles[checker.role].name}</option>
+														<option key={checker.id} value={checker.id}>{checker.firstName} -- {roleMap[checker.role]}</option>
 													))}
 												</select>
 											</div>
@@ -365,9 +364,7 @@ export default function EditAccount({ user }: props) {
 							</div>
 						</div>
 					</div>
-				)
-
-				}
+				)}
 				
 				<main className="p-4">
 					<form className="flex flex-col">
@@ -389,8 +386,8 @@ export default function EditAccount({ user }: props) {
 								value={role}
 								onChange={(e) => setRole(parseInt(e.target.value))}
 								className="mt-2 p-2 w-full border rounded">
-								{roles && roles.map((role: Role) => (
-									<option key={role.id} value={role.id}>{role.name}</option>
+								{roleMap && Object.entries(roleMap).map(([id, name]) => (
+									<option key={id} value={id}>{name}</option>
 								))}
 							</select>
 						</div>

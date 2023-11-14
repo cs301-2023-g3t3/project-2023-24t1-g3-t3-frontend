@@ -34,6 +34,10 @@ interface Role {
   name: string;
 }
 
+interface props {
+  roleMap: { [ key: number ]: string }
+}
+
 const Spinner = () => {
   return (
     <div className="fixed z-10 inset-0 -top-48" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -51,7 +55,7 @@ const Spinner = () => {
   );
 }
   
-export default function CreateAccount() {
+export default function CreateAccount(props: props) {
   const { data: session } = useSession();
   const customSession = ((session as unknown) as CustomSession);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -61,15 +65,6 @@ export default function CreateAccount() {
     'X-IDTOKEN': `${customSession.id_token}`,
   };
   const router = useRouter();
-
-  const [roles, setRoles] = useState<Role[]>([
-    { id: 0, name: "Customer" },
-    { id: 1, name: "Owner" },
-    { id: 2, name: "Manager" },
-    { id: 3, name: "Engineer" },
-    { id: 4, name: "Product Manager" },
-  ]);
-  
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -257,7 +252,7 @@ export default function CreateAccount() {
                           onChange={(e) => setCheckerId(e.target.value)}
                           className="mt-2 p-2 w-full border rounded">
                           {checkers && checkers.map((checker) => (
-                            <option key={checker.id} value={checker.id}>{checker.firstName} -- {roles[checker.role].name}</option>
+                            <option key={checker.id} value={checker.id}>{checker.firstName} -- {props.roleMap[checker.role]}</option>
                           ))}
                         </select>
                       </div>
@@ -301,8 +296,8 @@ export default function CreateAccount() {
                 value={role}
                 onChange={(e) => setRole(parseInt(e.target.value))}
                 className="mt-2 p-2 w-full border rounded">
-                {roles && roles.map((role: Role) => (
-                  <option key={role.id} value={role.id}>{role.name}</option>
+                {props.roleMap && Object.entries(props.roleMap).map(([id, name]) => (
+                  <option key={id} value={id}>{name}</option>
                 ))}
               </select>
             </div>

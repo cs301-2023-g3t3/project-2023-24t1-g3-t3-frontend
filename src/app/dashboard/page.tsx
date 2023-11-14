@@ -417,7 +417,9 @@ export default function DashboardPage() {
 									</button>
 								</div>
 								<div>
-									<CreateAccount />
+									<CreateAccount 
+										roleMap={roleMap}
+									/>
 								</div>
 							</div>
 						</div>
@@ -451,7 +453,10 @@ export default function DashboardPage() {
 									</button>
 								</div>
 								<div>
-									<EditAccount user={currentEditUser} />
+									<EditAccount 
+										user={currentEditUser} 
+										roleMap={roleMap}
+									/>
 								</div>
 							</div>
 						</div>
@@ -485,7 +490,10 @@ export default function DashboardPage() {
 									</button>
 								</div>
 								<div>
-									<EditPointsAccount pointsAccount={currentEditPoints} />
+									<EditPointsAccount 
+										pointsAccount={currentEditPoints} 
+										roleMap={roleMap}
+									/>
 								</div>
 							</div>
 						</div>

@@ -43,6 +43,7 @@ interface User {
 
 interface props {
 	pointsAccount: PointsAccount;
+    roleMap: { [ key: number ]: string }
 }
 
 const Spinner = () => {
@@ -62,7 +63,7 @@ const Spinner = () => {
 	);
 }
 	
-export default function EditPointsAccount({ pointsAccount }: props) {
+export default function EditPointsAccount({ pointsAccount, roleMap }: props) {
 	const { data: session } = useSession();
 	const customSession = ((session as unknown) as CustomSession);
 	const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -71,14 +72,6 @@ export default function EditPointsAccount({ pointsAccount }: props) {
 		'Authorization': `Bearer ${customSession.accessToken}`,
 		'X-IDTOKEN': `${customSession.id_token}`,
 	};
-	
-    const [roles, setRoles] = useState<Role[]>([
-		{ id: 0, name: "Customer" },
-		{ id: 1, name: "Owner" },
-		{ id: 2, name: "Manager" },
-		{ id: 3, name: "Engineer" },
-		{ id: 4, name: "Product Manager" },
-	]);
 	
 	const [amount, setAmount] = useState("0");
     const [operation, setOperation] = useState("add");
@@ -263,7 +256,7 @@ export default function EditPointsAccount({ pointsAccount }: props) {
                                                 onChange={(e) => setCheckerId(e.target.value)}
                                                 className="mt-2 p-2 w-full border rounded">
                                                 {checkers && checkers.map((checker) => (
-                                                    <option key={checker.id} value={checker.id}>{checker.firstName} -- {roles[checker.role].name}</option>
+                                                    <option key={checker.id} value={checker.id}>{checker.firstName} -- {roleMap[checker.role]}</option>
                                                 ))}
                                             </select>
                                         </div>
