@@ -284,7 +284,36 @@ export default function AccessControl() {
 
                 <div className="flex pl-4 flex-grow flex-col">
                   <div className="flex justify-between mb-4">
-                    <h1 className="text-2xl font-semibold text-gray-900">{selectedRole}</h1>
+                    <div className='flex items-center gap-4 pl-4'>
+                      <h1 className="text-2xl font-semibold text-gray-900">{selectedRole}</h1>
+                      {/* Delete Role Button */}
+                      <button 
+                        className="flex gap-2 text-gray-700 hover:text-gray-800"
+                        onClick={() => {
+                          const id = roles.find((role: Role) => role.name === selectedRole)?.id;
+                          axios.delete(apiUrl + `/users/roles/${id}`, { headers })
+                          .then((response) => {
+                              console.log(response);
+                              notification.success({
+                                message: 'Role deleted successfully!',
+                                description: 'Role deleted successfully!',
+                              });
+                              setUpdateCount(updateCount + 1);
+                              // window.location.reload();
+                          }).catch((error) => {
+                              console.log(error);
+                              notification.error({
+                                message: 'Error deleting role!',
+                                description: 'Error deleting role!',
+                              });
+
+                          });
+                        }}
+                      >
+                        <FiTrash className="text-red-500 text-xl cursor-pointer hover:text-red-600" />
+                      </button>
+                    </div>
+                    
                     <div className="flex items-center gap-4">
                     <input
                       type="text"
@@ -315,7 +344,7 @@ export default function AccessControl() {
                                   <tr>
                                       <td colSpan={3} className="text-center">Loading...</td>
                                   </tr>
-                              ) : (
+                              ) : (rolePermissions[selectedRole] &&
                                   Object.entries(rolePermissions[selectedRole])
                                   .filter(([permission, _]) => permission.toLowerCase().includes(searchTerm.toLowerCase()))
                                   .map(([permission, isChecked]) => (
