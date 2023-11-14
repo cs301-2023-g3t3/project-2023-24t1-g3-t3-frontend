@@ -13,6 +13,7 @@ import Header from '../components/Header';
 import { useRouter } from 'next/navigation';
 import { access } from 'fs';
 import { notification } from 'antd';
+import { update } from 'react-spring';
 
 interface CustomSession {
   user: {
@@ -22,6 +23,7 @@ interface CustomSession {
   role: string;
   userId: string;
   accessToken: string;
+  id_token: string;
 }
 
 interface Role {
@@ -52,7 +54,8 @@ export default function AccessControl() {
   
 
   const headers = {
-    'Authorization': `Bearer ${customSession.accessToken}`
+    'Authorization': `Bearer ${customSession.accessToken}`,
+    'X-IDTOKEN': `${customSession.id_token}`
   };
   
   const [selectedRole, setSelectedRole] = useState(customSession.role);
@@ -64,6 +67,9 @@ export default function AccessControl() {
   const [accessPoints, setAccessPoints] = useState<AccessPoint[]>([]);
 
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
+
+  const [newRole, setNewRole] = useState<Role>({} as Role);
+  const [updateCount, setUpdateCount] = useState<number>(0);
 
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -126,12 +132,13 @@ export default function AccessControl() {
       setOriginalRolePermissions(roleToPermissions);
       setLoading(false);
     });
-  }, []);
+  }, [updateCount]);
   
   const [changes, setChanges] = useState<RolePermissions>({});
 
   const [createAccessPointModal, setCreateAccessPointModal] = useState<boolean>(false);
   const [deleteAccessPointModal, setDeleteAccessPointModal] = useState<boolean>(false);
+  const [createRoleModal, setCreateRoleModal] = useState<boolean>(false);
 
   const [toDeleteAccessPoint, setToDeleteAccessPoint] = useState<number>(0);
 
@@ -263,6 +270,14 @@ export default function AccessControl() {
                             </button>
                         </li>
                     ))}
+                    <button
+                      className='p-3 w-full rounded hover:text-gray-800 bg-gray-500 text-white'
+                      onClick={() => {
+                        setCreateRoleModal(true);
+                      }}
+                      >
+                        Create Role
+                      </button>
                 </ul>
 
                 </div>
@@ -419,9 +434,19 @@ export default function AccessControl() {
                                           endpoint: newAccessPoint.endpoint
                                       }, { headers }).then((response) => {
                                           console.log(response);
-                                          window.location.reload();
+                                          setCreateAccessPointModal(false);
+                                          notification.success({
+                                            message: 'Access point created successfully!',
+                                            description: 'Access point created successfully!',
+                                          });
+                                          setUpdateCount(updateCount + 1);
+                                          // window.location.reload();
                                       }).catch((error) => {
                                           console.log(error);
+                                          notification.error({
+                                            message: 'Error creating access point!',
+                                            description: 'Error creating access point!',
+                                          });
                                       }
                                       );
                                   }}
@@ -473,7 +498,13 @@ export default function AccessControl() {
                                       axios.delete(apiUrl + `/users/access-points/${toDeleteAccessPoint}`, { headers })
                                       .then((response) => {
                                           console.log(response);
-                                          window.location.reload();
+                                          setDeleteAccessPointModal(false);
+                                          notification.success({
+                                            message: 'Access point deleted successfully!',
+                                            description: 'Access point deleted successfully!',
+                                          });
+                                          setUpdateCount(updateCount + 1);
+                                          // window.location.reload();
                                       }).catch((error) => {
                                           console.log(error);
                                       });
@@ -497,6 +528,83 @@ export default function AccessControl() {
                   </div>
 
               )}
+
+              {createRoleModal && (
+                <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                  <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                      <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                      <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                      <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                              <div className="sm:flex sm:items-start">
+                                  <div className="w-full mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                      <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                      Create Role
+                                      </h3>
+
+                                      <div className="mt-2">
+                                          <input 
+                                              type="text" 
+                                              name="newRole" 
+                                              id="newRole" 
+                                              className="pl-2 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-500 rounded-md h-8" 
+                                              placeholder="Name of Role"
+                                              onChange={(e) => {
+                                                newRole.name = e.target.value;
+                                              }}
+                                          />
+                                      </div>
+                                      
+                                  </div>
+                              </div>
+                          </div>
+                          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse flex-col">
+                              <button 
+                                  type="button" 
+                                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                  onClick={() => {
+                                      axios.post(apiUrl + '/users/roles', 
+                                      {
+                                          "name": newRole.name,
+                                      }, { headers }).then((response) => {
+                                          console.log(response);
+                                          setCreateRoleModal(false);
+                                          notification.success({
+                                            message: 'Role created successfully!',
+                                            description: 'Role created successfully!',
+                                          });
+                                          setUpdateCount(updateCount + 1);
+                                          
+                                      }).catch((error) => {
+                                          console.log(error);
+                                          notification.error({
+                                            message: 'Error creating role!',
+                                            description: 'Error creating role!',
+                                          });
+                                      }
+                                      );
+                                  }}
+                              >
+                                  Create
+                              </button>
+                          
+                              <button 
+                                  onClick={() => {
+                                      setCreateRoleModal(false);
+                                  }}
+                                  type="button" 
+                                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                              >
+                                  Cancel
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+                
+                )
+                    
+              }
 
             </div>
 
