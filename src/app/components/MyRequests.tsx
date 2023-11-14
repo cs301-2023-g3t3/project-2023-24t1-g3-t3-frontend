@@ -108,7 +108,7 @@ export default function MyRequests({ session }: any) {
                 </tr>
             </thead>
             <tbody>
-                {requests.map((request: Request) => (
+                {!isEmpty && requests.map((request: Request) => (
                 <tr key={request._id} className="hover:bg-gray-100 transition duration-150 ease-in-out">
                     <td className="text-gray-500 border px-4 py-3">{request.makerEmail}</td>
                     <td className="text-gray-500 border px-4 py-3">{request.endpoint}</td>

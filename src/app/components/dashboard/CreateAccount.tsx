@@ -154,7 +154,6 @@ export default function CreateAccount() {
     });
   }
 
-
   const verifyIfCanMakerChecker = async () => {
     setLoading(true);
     const endpoint = '/*/POST/users/accounts';

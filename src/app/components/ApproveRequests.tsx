@@ -108,7 +108,7 @@ export default function ApproveRequests({ session }: any) {
                 </tr>
             </thead>
             <tbody>
-                {requests.map(request => (
+                {!isEmpty && requests.map(request => (
                 <tr key={request._id} className="hover:bg-gray-100 transition duration-150 ease-in-out">
                     <td className="text-gray-500 border px-4 py-3">{request.makerEmail}</td>
                     <Tooltip title={JSON.stringify(request.data)}>
