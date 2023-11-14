@@ -9,15 +9,9 @@ import { FaCaretDown } from "react-icons/fa";
 interface props {
     logGroup: LogGroup[]
     location: Location
+    roleMap: { [ key: number ]: string }
     setSearch: (search: string) => void
     startQuery: (search: string) => void
-}
-
-const roleMapping: { [ key: string ]: string } = {
-    "1": "Owner",
-    "2": "Manager",
-    "3": "Engineer",
-    "4": "Product Manager",
 }
 
 const LogCard = (props: props) => {
@@ -158,7 +152,7 @@ const LogCard = (props: props) => {
                                 { log.USER_DETAILS.id }
                             </div>
                             <div className="col text-gray-400">
-                                { roleMapping[log.USER_DETAILS.role] }
+                                { props.roleMap[parseInt(log.USER_DETAILS.role)] }
                             </div>
                         </div>
                     ) }

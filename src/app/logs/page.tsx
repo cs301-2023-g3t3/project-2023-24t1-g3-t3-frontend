@@ -96,6 +96,8 @@ export default function DashboardPage() {
 	const [maxPage, setMaxPage] = useState(0);
 	const [isDone, setIsDone] = useState(false);
 
+	const [roleMap, setRoleMap] = useState<{ [key: number]: string }>({});
+
 	const [retentionInDays, setRetentionInDays] = useState(0);
 	const [retentionModalOpen, setRetentionModalOpen] = useState(false);
 	const [loadingRetention, setLoadingRetention] = useState(true);
@@ -115,6 +117,25 @@ export default function DashboardPage() {
 
 		getRetention();
 	}, [])
+
+	useEffect(() => {
+		const getRoles = async () => {
+			const res = await axios.get(`${apiUrl}/users/roles`, { headers })
+			
+			const newRoleMap: { [key: number] : string } = {
+				0: 'Customer',
+			}
+			res.data.forEach((role: { id: number; name: string; }) => {
+				newRoleMap[role.id] = role.name;
+			});
+
+			setRoleMap(
+				newRoleMap
+			)
+		}
+
+		getRoles();
+	}, []);
 
 	const startQuery = async (search: string) => {
 		try {
@@ -261,6 +282,7 @@ export default function DashboardPage() {
 											<LogCard 
 												logGroup={logGroup} 
 												location={locations[ip]} 
+												roleMap={roleMap}
 												setSearch={setSearch} 
 												startQuery={startQuery} 
 											/>

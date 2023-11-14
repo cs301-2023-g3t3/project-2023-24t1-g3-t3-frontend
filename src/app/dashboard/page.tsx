@@ -61,13 +61,13 @@ interface RoleMap {
 	[key: number]: string;
 }
 
-const roleMap: RoleMap = {
+/*const roleMap: RoleMap = {
 	0: 'Customer',
 	1: 'Owner',
 	2: 'Manager',
 	3: 'Engineer',
 	4: 'Product Manager'
-};
+};*/
 
 export default function DashboardPage() {
 	const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -97,6 +97,8 @@ export default function DashboardPage() {
 	const [enrollUser, setEnrollUser] = useState(false);
 	const [currentEditUser, setCurrentEditUser] = useState<User>();
 	const [currentEditPoints, setCurrentEditPoints] = useState<PointsAccount>();
+
+	const [roleMap, setRoleMap] = useState<RoleMap>({});
 
 	const getRoleIdFromRoleName = (roleName: string) => {
 		const roleId = Object.values(roleMap).findIndex(role => role === roleName);
@@ -155,6 +157,25 @@ export default function DashboardPage() {
 	}
 
 	useEffect(() => {
+		const getRoles = async () => {
+			const res = await axios.get(`${apiUrl}/users/roles`, { headers })
+			
+			const newRoleMap: { [key: number] : string } = {
+				0: 'Customer',
+			}
+			res.data.forEach((role: { id: number; name: string; }) => {
+				newRoleMap[role.id] = role.name;
+			});
+
+			setRoleMap(
+				newRoleMap
+			)
+		}
+
+		getRoles();
+	}, [])
+
+	useEffect(() => {
 		const div = scrollableDivRef.current;
 		if (div) {
 			div.addEventListener('scroll', handleScroll);
@@ -180,12 +201,13 @@ export default function DashboardPage() {
 				signOut({callbackUrl: '/'});
 				return; // Exit if the token is expired
 			}
-			console.log('yes')
+			
 			// Get users
 			axios.get(`${apiUrl}/users/accounts/paginate?page=1&size=50`, { headers })
 				.then(response => {
 					const users = response.data.data;
 					// map role id to role name
+					
 					const mappedUsers = users.map((user: { role: number | null; }) => ({
 						...user,
 						role: roleMap[user.role !== null ? user.role : 0],
@@ -204,7 +226,7 @@ export default function DashboardPage() {
 					setLoadingUsers(false);
 				});
 		}
-	}, [customSession, apiUrl]);
+	}, [customSession, apiUrl, roleMap]);
 
 	const debouncedSearch = React.useCallback(
 		debounce(() => {
@@ -220,7 +242,8 @@ export default function DashboardPage() {
 		if (searchId) params.append('id', searchId);
 		if (selectedRole) {
 			const roleId = getRoleIdFromRoleName(selectedRole);
-			if (roleId) params.append('role', roleId.toString());
+			
+			if (roleId != "null") params.append('role', roleId.toString());
 		}
 		if (params.toString() === '') {
 			if (people.length === 0) {
@@ -234,7 +257,7 @@ export default function DashboardPage() {
 		axios.get(`${apiUrl}/users/accounts?${params}`, { headers })
 		.then(response => {
 			const users = response.data;
-			
+
 			// map role id to role name
 			const mappedUsers = users.map((user: { role: number | null; }) => ({
 				...user,
@@ -322,11 +345,9 @@ export default function DashboardPage() {
 							
 							<select value={selectedRole} onChange={e => setSelectedRole(e.target.value)}>
 								<option value="">Role</option>
-								<option value="Owner">Owner</option>
-								<option value="Manager">Manager</option>
-								<option value="Engineer">Engineer</option>
-								<option value="Product Manager">Product Manager</option>
-								<option value="Customer">Customer</option>
+								{ Object.values(roleMap).map(role => (
+									<option key={ `option-${role}` } value={role}>{role}</option>
+								)) }
 							</select>
 
 
