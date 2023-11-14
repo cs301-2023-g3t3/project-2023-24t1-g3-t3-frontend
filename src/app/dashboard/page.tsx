@@ -23,6 +23,7 @@ import debounce from 'lodash.debounce';
 import CreateAccount from '../components/dashboard/CreateAccount';
 import EditAccount from '../components/dashboard/EditAccount';
 import EditPointsAccount from '../components/dashboard/EditPoints';
+import { notification } from 'antd';
 
 interface CustomSession {
 	user: {
@@ -133,6 +134,10 @@ export default function DashboardPage() {
 			console.error(error);
 			// Handle errors for both requests
 			setError(error);
+			notification.error({
+				message: 'Error',
+				description: 'Failed to load users'
+			});
 			setLoadingUsers(false);
 		});
 

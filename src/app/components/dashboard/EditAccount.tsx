@@ -120,7 +120,14 @@ export default function EditAccount({ user }: props) {
 		}).catch((err) => {
 			console.log(err);
 			setLoading(false);
+			if (err.response.status === 403) {
 			verifyIfCanMakerCheckerEdit();
+			} else {
+				notification.error({
+					message: 'Error',
+					description: 'Failed to edit account.',
+				});
+			}
 			// setRequestPermissionModal(true);
 		});
 	}
@@ -140,7 +147,14 @@ export default function EditAccount({ user }: props) {
 		}).catch((err) => {
 			console.log(err);
 			setLoading(false);
-			verifyIfCanMakerCheckerDelete();
+			if (err.response.status === 403) {
+				verifyIfCanMakerCheckerDelete();
+			} else {
+				notification.error({
+					message: 'Error',
+					description: 'Failed to delete account.',
+				});
+			}
 			// setRequestPermissionModal(true);
 		});
 	}
@@ -202,8 +216,20 @@ export default function EditAccount({ user }: props) {
 					message: 'Error',
 					description: 'Not allowed to edit account.',
 				});
-				setLoading(false);
+				
+			} else if (err.response.status === 404) {
+				notification.error({
+					message: 'Error',
+					description: 'Account not found.',
+				});
+			} else if (err.response.status === 400) {
+				notification.error({
+					message: 'Error',
+					description: 'Bad request.',
+				});
 			}
+
+			setLoading(false);
 		});
 	}
 
@@ -229,8 +255,13 @@ export default function EditAccount({ user }: props) {
 					message: 'Error',
 					description: 'Not allowed to delete account.',
 				});
-				setLoading(false);
+			} else {
+				notification.error({
+					message: 'Error',
+					description: 'Unable to delete account.',
+				});
 			}
+			setLoading(false);
 		});
 	}
 

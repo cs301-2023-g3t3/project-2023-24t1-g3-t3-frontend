@@ -110,7 +110,15 @@ export default function CreateAccount() {
     }).catch((err) => {
       console.log(err);
       setLoading(false);
-      verifyIfCanMakerChecker();
+      if (err.response.status === 403) {
+        verifyIfCanMakerChecker();  
+      } else {
+        notification.error({
+          message: 'Error',
+          description: 'Error creating account.',
+        });
+      }
+      
       // setRequestPermissionModal(true);
     });
 
